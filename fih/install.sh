@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+FIH_DIR="$ROOT_DIR/fih"
+DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/integeros/fih"
+BIN_DIR="${HOME}/.local/bin"
+FISH_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/fish"
+BACKUP_DIR="$DATA_DIR/backups/$(date +%Y%m%d-%H%M%S)"
+
+if [[ "$EUID" -eq 0 ]]; then
+  echo "Run this installer as your normal user, not with sudo." >&2
+  exit 1
+fi
+[[ -s "$FIH_DIR/bin/io" && -s "$FIH_DIR/fish/conf.d/fih.fish" ]] || {
+  echo "FIH source files are missing; run this from the InntegerOS repository." >&2
+  exit 1
+}
+
+mkdir -p "$BIN_DIR" "$DATA_DIR/payload/scripts" "$DATA_DIR/payload/apps" "$FISH_DIR/conf.d" "$FISH_DIR/completions" "$FISH_DIR/functions"
+
+# Copy only the InntegerOS components that FIH dispatches to.
+for file in doctor.sh software-updater.sh desktop-profile.sh; do
+  if [[ -s "$ROOT_DIR/scripts/$file" ]]; then
+    install -m 0755 "$ROOT_DIR/scripts/$file" "$DATA_DIR/payload/scripts/$file"
+  fi
+done
+
+# Preserve a pre-existing custom fish prompt rather than replacing it.
+if [[ -e "$FISH_DIR/functions/fish_prompt.fish" && ! -e "$FISH_DIR/functions/fish_prompt.fih-backup" ]]; then
+  mkdir -p "$BACKUP_DIR"
+  cp -a "$FISH_DIR/functions/fish_prompt.fish" "$BACKUP_DIR/fish_prompt.fish"
+  echo "Existing fish prompt backed up to: $BACKUP_DIR/fish_prompt.fish"
+  echo "Your existing prompt was preserved; the FIH prompt is available as an optional theme."
+else
+  install -m 0644 "$FIH_DIR/fish/functions/fish_prompt.fish" "$FISH_DIR/functions/fish_prompt.fih.fish"
+fi
+
+install -m 0755 "$FIH_DIR/bin/io" "$BIN_DIR/io"
+install -m 0644 "$FIH_DIR/fish/conf.d/fih.fish" "$FISH_DIR/conf.d/fih.fish"
+install -m 0644 "$FIH_DIR/fish/completions/io.fish" "$FISH_DIR/completions/io.fish"
+
+# Keep source-linked operation available while also providing an installed payload.
+cat > "$DATA_DIR/config" <<EOF
+FIH_VERSION=0.1.0
+INNTEGEROS_ROOT=$ROOT_DIR
+EOF
+
+echo
+echo "FIH installed for this user."
+echo "  Command:  io help"
+echo "  Shell:    fish (install with: sudo apt install fish)"
+echo "  Account:  none required"
+echo "  Network:  not used by FIH itself"
+echo
+echo "FIH does not change your default login shell."
+echo "Open a new fish session to load the FIH greeting and completions."
