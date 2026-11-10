@@ -11,6 +11,10 @@ if [[ "$EUID" -eq 0 ]]; then
   echo "Run this installer as your normal user, not with sudo." >&2
   exit 1
 fi
+if ! command -v fish >/dev/null 2>&1; then
+  echo "Fish is not installed. Install it through Discover or run: bash scripts/install-apps.sh --group shell" >&2
+  exit 1
+fi
 [[ -s "$FIH_DIR/bin/io" && -s "$FIH_DIR/fish/conf.d/fih.fish" ]] || {
   echo "FIH source files are missing; run this from the InntegerOS repository." >&2
   exit 1
