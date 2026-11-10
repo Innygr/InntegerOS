@@ -47,8 +47,6 @@ find_payload() {
   local rel="$1"
   if [[ -n "$REPO_ROOT" && -e "$REPO_ROOT/$rel" ]]; then
     printf '%s\n' "$REPO_ROOT/$rel"
-  elif [[ -e "$DATA_DIR/payload/$rel" ]]; then
-    printf '%s\n' "$DATA_DIR/payload/$rel"
   else
     return 1
   fi
