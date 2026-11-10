@@ -23,7 +23,7 @@ io help
 
 The installer copies FIH's dispatcher to `~/.local/bin/io` and installs fish startup configuration and completions under `~/.config/fish`. It does not install packages, edit system files, or change the default login shell.
 
-If a custom `fish_prompt.fish` already exists, the installer preserves it. The FIH prompt is installed as an optional prompt file instead.
+If a custom `fish_prompt.fish` already exists, the installer preserves it and installs the FIH prompt separately as `fih_prompt`. To switch for the current session, run `functions -c fih_prompt fish_prompt`. If no custom prompt exists, the installer enables the FIH prompt by default.
 
 ## Commands
 
@@ -49,11 +49,11 @@ Some commands require their corresponding InntegerOS component to be installed. 
 ## Uninstall
 
 ```bash
-rm -f ~/.local/bin/io ~/.config/fish/conf.d/fih.fish ~/.config/fish/completions/io.fish ~/.config/fish/functions/fish_prompt.fih.fish
+rm -f ~/.local/bin/io ~/.config/fish/conf.d/fih.fish ~/.config/fish/completions/io.fish ~/.config/fish/functions/fih_prompt.fish
 rm -rf ~/.local/share/integeros/fih
 ```
 
-This removes FIH files only. It does not uninstall fish, alter KDE settings, or change the login shell. If you opted to use the FIH prompt by copying it to `fish_prompt.fish`, remove or restore that file separately.
+This removes FIH files only. It does not uninstall fish, alter KDE settings, or change the login shell. If the installer created `~/.config/fish/functions/fish_prompt.fish`, remove that wrapper too. If you replaced an existing prompt manually, restore it from your own backup.
 
 ## Status
 
