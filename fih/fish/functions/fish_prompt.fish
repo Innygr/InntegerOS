@@ -1,4 +1,4 @@
-function fish_prompt
+function fih_prompt
     set -l last_status $status
     set_color brmagenta
     printf '╭─ '
