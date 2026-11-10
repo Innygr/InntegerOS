@@ -27,11 +27,16 @@ for file in doctor.sh software-updater.sh desktop-profile.sh; do
 done
 
 # Preserve a pre-existing custom fish prompt rather than replacing it.
-if [[ -e "$FISH_DIR/functions/fish_prompt.fish" ]]; then
-  install -m 0644 "$FIH_DIR/fish/functions/fish_prompt.fish" "$FISH_DIR/functions/fish_prompt.fih.fish"
-  echo "Existing fish prompt preserved. Optional FIH prompt installed as fish_prompt.fih.fish."
+install -m 0644 "$FIH_DIR/fish/functions/fish_prompt.fish" "$FISH_DIR/functions/fih_prompt.fish"
+if [[ ! -e "$FISH_DIR/functions/fish_prompt.fish" ]]; then
+  cat > "$FISH_DIR/functions/fish_prompt.fish" <<'PROMPT'
+function fish_prompt
+    fih_prompt
+end
+PROMPT
+  chmod 0644 "$FISH_DIR/functions/fish_prompt.fish"
 else
-  install -m 0644 "$FIH_DIR/fish/functions/fish_prompt.fish" "$FISH_DIR/functions/fish_prompt.fish"
+  echo "Existing fish prompt preserved. To try the FIH prompt, use: functions -c fih_prompt fish_prompt"
 fi
 
 install -m 0755 "$FIH_DIR/bin/io" "$BIN_DIR/io"
