@@ -87,7 +87,7 @@ case "${1:-help}" in
     if command -v plasmashell >/dev/null 2>&1; then plasmashell --version 2>/dev/null | head -n 1; fi
     ;;
   doctor)
-    run_payload "scripts/doctor.sh" "$@"
+    run_payload "scripts/doctor.sh"
     ;;
   update)
     run_payload "scripts/software-updater.sh" "${@:2}"
