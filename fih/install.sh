@@ -48,7 +48,7 @@ install -m 0644 "$FIH_DIR/fish/completions/io.fish" "$FISH_DIR/completions/io.fi
 echo
 echo "FIH installed for this user."
 echo "  Command:  io help"
-echo "  Shell:    fish (install with: sudo apt install fish)"
+echo "  Shell:    fish (install via Discover or the InntegerOS shell package group)"
 echo "  Account:  none required"
 echo "  Network:  not used by FIH itself"
 echo
