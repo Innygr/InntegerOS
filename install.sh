@@ -149,6 +149,11 @@ summary() {
 }
 
 step "Install packages (choose each group separately)" n bash "${ROOT_DIR}/scripts/install-apps.sh"
+if command -v fish >/dev/null 2>&1; then
+  step "Install optional FIH shell integration" n bash "${ROOT_DIR}/fih/install.sh"
+else
+  echo "FIH is optional. Install the 'shell' package group first, then run: bash fih/install.sh"
+fi
 step "Install the graphical InnyGrOS Welcome Center" y bash "${ROOT_DIR}/scripts/install-welcome-center.sh"
 if command -v kwriteconfig6 >/dev/null 2>&1 || command -v kwriteconfig5 >/dev/null 2>&1; then
   step "Apply the InnyGrOS desktop profile (snapshot first, reversible)" y bash "${ROOT_DIR}/scripts/desktop-profile.sh" apply
