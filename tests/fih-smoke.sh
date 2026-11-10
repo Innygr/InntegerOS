@@ -15,7 +15,10 @@ if "$ROOT_DIR/fih/bin/io" not-a-command >/dev/null 2>&1; then
   exit 1
 fi
 
-HOME="$TMP_HOME" XDG_CONFIG_HOME="$TMP_HOME/.config" XDG_DATA_HOME="$TMP_HOME/.local/share" \
+mkdir -p "$TMP_HOME/bin"
+printf '#!/usr/bin/env bash\nexit 0\n' > "$TMP_HOME/bin/fish"
+chmod +x "$TMP_HOME/bin/fish"
+PATH="$TMP_HOME/bin:$PATH" HOME="$TMP_HOME" XDG_CONFIG_HOME="$TMP_HOME/.config" XDG_DATA_HOME="$TMP_HOME/.local/share" \
   bash "$ROOT_DIR/fih/install.sh"
 
 test -x "$TMP_HOME/.local/bin/io"
