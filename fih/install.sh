@@ -27,13 +27,11 @@ for file in doctor.sh software-updater.sh desktop-profile.sh; do
 done
 
 # Preserve a pre-existing custom fish prompt rather than replacing it.
-if [[ -e "$FISH_DIR/functions/fish_prompt.fish" && ! -e "$FISH_DIR/functions/fish_prompt.fih-backup" ]]; then
-  mkdir -p "$BACKUP_DIR"
-  cp -a "$FISH_DIR/functions/fish_prompt.fish" "$BACKUP_DIR/fish_prompt.fish"
-  echo "Existing fish prompt backed up to: $BACKUP_DIR/fish_prompt.fish"
-  echo "Your existing prompt was preserved; the FIH prompt is available as an optional theme."
-else
+if [[ -e "$FISH_DIR/functions/fish_prompt.fish" ]]; then
   install -m 0644 "$FIH_DIR/fish/functions/fish_prompt.fish" "$FISH_DIR/functions/fish_prompt.fih.fish"
+  echo "Existing fish prompt preserved. Optional FIH prompt installed as fish_prompt.fih.fish."
+else
+  install -m 0644 "$FIH_DIR/fish/functions/fish_prompt.fish" "$FISH_DIR/functions/fish_prompt.fish"
 fi
 
 install -m 0755 "$FIH_DIR/bin/io" "$BIN_DIR/io"
@@ -41,10 +39,10 @@ install -m 0644 "$FIH_DIR/fish/conf.d/fih.fish" "$FISH_DIR/conf.d/fih.fish"
 install -m 0644 "$FIH_DIR/fish/completions/io.fish" "$FISH_DIR/completions/io.fish"
 
 # Keep source-linked operation available while also providing an installed payload.
-cat > "$DATA_DIR/config" <<EOF
-FIH_VERSION=0.1.0
-INNTEGEROS_ROOT=$ROOT_DIR
-EOF
+{
+  printf 'FIH_VERSION=%q\n' "0.1.0"
+  printf 'INNTEGEROS_ROOT=%q\n' "$ROOT_DIR"
+} > "$DATA_DIR/config"
 
 echo
 echo "FIH installed for this user."
