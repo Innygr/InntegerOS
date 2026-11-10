@@ -7,11 +7,11 @@ trap 'rm -rf "$TMP_HOME" "$CUSTOM_HOME"' EXIT
 
 bash -n "$ROOT_DIR/fih/install.sh"
 bash -n "$ROOT_DIR/fih/bin/io"
-"$ROOT_DIR/fih/bin/io" help | grep -q 'FIH // Fish Integrated by Blacklight'
-"$ROOT_DIR/fih/bin/io" version | grep -q '^FIH 0.1.0$'
-"$ROOT_DIR/fih/bin/io" info | grep -q '^Kernel:'
+bash "$ROOT_DIR/fih/bin/io" help | grep -q 'FIH // Fish Integrated by Blacklight'
+bash "$ROOT_DIR/fih/bin/io" version | grep -q '^FIH 0.1.0$'
+bash "$ROOT_DIR/fih/bin/io" info | grep -q '^Kernel:'
 
-if "$ROOT_DIR/fih/bin/io" not-a-command >/dev/null 2>&1; then
+if bash "$ROOT_DIR/fih/bin/io" not-a-command >/dev/null 2>&1; then
   echo "Unknown FIH commands must return a non-zero status." >&2
   exit 1
 fi
