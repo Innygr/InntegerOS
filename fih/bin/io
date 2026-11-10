@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# io — InntegerOS command line interface for FIH.
+set -Eeuo pipefail
+
+VERSION="0.1.0"
+DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/integeros/fih"
+REPO_ROOT=""
+if [[ -n "${INNTEGEROS_ROOT:-}" && -d "${INNTEGEROS_ROOT}" ]]; then
+  REPO_ROOT="$INNTEGEROS_ROOT"
+elif [[ -d "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)/scripts" ]]; then
+  REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+fi
+
+usage() {
+  cat <<'EOF'
+FIH // Fish Integrated by Blacklight
+The InntegerOS command interface. No account or network connection required.
+
+Usage: io <command> [arguments]
+
+Commands:
+  help                  Show this help
+  version               Show FIH and InntegerOS versions
+  info                  Show local system information
+  doctor                Run the InntegerOS read-only health check
+  update [--check]      Open/check the InntegerOS source updater
+  profile [arguments]   Show or manage the desktop profile
+  theme                 Open InntegerOS Theme Studio (or KDE settings)
+  apps                  Open Discover
+  welcome               Open the InntegerOS Welcome Center
+  blacklight            Open Blacklight Desktop Suite
+  config                Open KDE System Settings
+  shell                 Start an interactive FIH fish session
+
+All commands run locally. FIH does not create accounts, enable telemetry,
+or require an online service. Package updates naturally need repositories.
+EOF
+}
+
+die() { printf 'io: %s\n' "$*" >&2; exit 1; }
+find_payload() {
+  local rel="$1"
+  if [[ -n "$REPO_ROOT" && -e "$REPO_ROOT/$rel" ]]; then
+    printf '%s\n' "$REPO_ROOT/$rel"
+  elif [[ -e "$DATA_DIR/payload/$rel" ]]; then
+    printf '%s\n' "$DATA_DIR/payload/$rel"
+  else
+    return 1
+  fi
+}
+run_payload() {
+  local rel="$1"; shift
+  local target
+  target="$(find_payload "$rel")" || die "InntegerOS component missing: $rel. Re-run the FIH installer from the InntegerOS checkout."
+  exec bash "$target" "$@"
+}
+launch_app() {
+  local app="$1"
+  if command -v "$app" >/dev/null 2>&1; then
+    exec "$app"
+  fi
+  die "$app is not installed. Open Discover to install the relevant InntegerOS component."
+}
+
+case "${1:-help}" in
+  help|-h|--help) usage ;;
+  version)
+    printf 'FIH %s\n' "$VERSION"
+    if [[ -n "$REPO_ROOT" && -r "$REPO_ROOT/VERSION" ]]; then
+      printf 'InntegerOS %s\n' "$(head -n 1 "$REPO_ROOT/VERSION")"
+    else
+      printf 'InntegerOS: installed desktop edition\n'
+    fi
+    ;;
+  info)
+    printf 'InntegerOS // Local system information\n'
+    if [[ -r /etc/os-release ]]; then . /etc/os-release; printf 'OS:       %s\n' "${PRETTY_NAME:-Linux}"; fi
+    printf 'Kernel:   %s\n' "$(uname -r)"
+    printf 'Host:     %s\n' "$(hostname)"
+    printf 'Desktop:  %s\n' "${XDG_CURRENT_DESKTOP:-not detected}"
+    printf 'Shell:    %s\n' "${SHELL##*/}"
+    if command -v plasmashell >/dev/null 2>&1; then plasmashell --version 2>/dev/null | head -n 1; fi
+    ;;
+  doctor)
+    run_payload "scripts/doctor.sh" "$@"
+    ;;
+  update)
+    run_payload "scripts/software-updater.sh" "${@:2}"
+    ;;
+  profile)
+    run_payload "scripts/desktop-profile.sh" "${@:2}"
+    ;;
+  theme)
+    if command -v integeros-theme-studio >/dev/null 2>&1; then launch_app integeros-theme-studio
+    elif command -v systemsettings >/dev/null 2>&1; then launch_app systemsettings
+    else die "KDE System Settings is unavailable."; fi
+    ;;
+  apps)
+    if command -v plasma-discover >/dev/null 2>&1; then launch_app plasma-discover
+    elif command -v discover >/dev/null 2>&1; then launch_app discover
+    else die "Discover is not installed."; fi
+    ;;
+  welcome) launch_app innygros-welcome ;;
+  blacklight) launch_app blacklight-desktop-suite ;;
+  config)
+    if command -v systemsettings >/dev/null 2>&1; then launch_app systemsettings
+    else die "KDE System Settings is unavailable."; fi
+    ;;
+  shell)
+    command -v fish >/dev/null 2>&1 || die "Fish is not installed. On Kubuntu: sudo apt install fish"
+    exec fish -l
+    ;;
+  *) printf 'io: unknown command: %s\n\n' "$1" >&2; usage >&2; exit 2 ;;
+esac
