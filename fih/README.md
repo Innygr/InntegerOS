@@ -15,7 +15,7 @@
 From the InntegerOS repository root:
 
 ```bash
-sudo apt install fish
+bash scripts/install-apps.sh --group shell
 bash fih/install.sh
 fish
 io help
