@@ -1,4 +1,6 @@
 ## Unreleased
+- Added FIH (Fish Integrated by Blacklight), an optional user-scoped fish customization with a branded greeting, selectable prompt, `io` command dispatcher, completions, and no account/activation/telemetry requirements.
+- Added an optional Fish package group and smoke tests for the FIH installer and command interface.
 - Added official InntegerOS vector wordmark and application icon; the Control Center installer now installs and uses the new icon.
 - Added a live Control Center overview for OS, kernel, memory, root storage, battery, power profile, network connectivity and uptime, refreshing every 15 seconds.
 - Confirmed **InntegerOS** as the official public product spelling; legacy internal identifiers and paths remain unchanged for compatibility.

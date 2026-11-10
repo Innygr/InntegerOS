@@ -14,6 +14,7 @@ PACKAGE_GROUPS=(
   "diagnostics|Read-only hardware/graphics checks used by the readiness and performance reports|pciutils mesa-utils vulkan-tools"
   "kde-apps|Standard KDE applications the Welcome Center opens|dolphin konsole kate plasma-discover plasma-systemmonitor"
   "image-viewer|Image viewer plus available format plugins (animated-format support varies by codec)|gwenview kimageformat-plugins qt6-image-formats-plugins"
+  "shell|FIH shell (Fish Integrated by Blacklight)|fish"
   "developer|Optional developer tools|git curl wget build-essential cmake ninja-build pkg-config clang gdb python3 python3-venv python3-pip pipx nodejs npm sqlitebrowser"
 )
 

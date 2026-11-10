@@ -39,6 +39,7 @@ InntegerOS is being developed toward an independent Linux distribution with one 
 - **InntegerOS Theme Studio** GUI for the existing colour scheme, wallpaper chooser, and KDE icon/cursor/global-theme/font settings ([documentation](docs/theme-studio.md))
 - **InntegerOS Quick Settings** compact GUI for Wi-Fi, Bluetooth, audio mute, and power profiles, complementing (not duplicating) the system-monitor side panel ([documentation](docs/quick-settings.md))
 - **Blacklight Desktop Suite** with a Fish-compatible terminal launcher, task profiles, Plasma animation controls, and native notification settings shortcuts ([documentation](docs/blacklight-desktop-suite.md))
+- **FIH (Fish Integrated by Blacklight)**: optional fish-shell customization with a Blacklight prompt, command completions, and the local `io` command interface for InntegerOS diagnostics, updates, profiles, settings, and applications ([documentation](docs/fih.md))
 - User-scoped configuration installation with timestamped backups for existing same-named Konsole files
 - Conservative performance diagnostics and GitHub Actions validation
 - 0.8 planned: broad-format image viewing, including animated formats where the selected viewer/backend supports them ([image viewer plan](docs/IMAGE-VIEWER.md), [compatibility results ledger](docs/IMAGE-VIEWER-RESULTS.md))
@@ -66,6 +67,19 @@ Install the optional compact controls panel with `bash scripts/install-quick-set
 ## Blacklight Desktop Suite
 
 Install with `bash scripts/install-blacklight-suite.sh`, then search for **Blacklight Desktop Suite**. It provides a Fish-first/Bash-fallback Konsole launcher, School/Development/Gaming/Presentation presets, animation speed controls, and shortcuts into KDE's native notification settings. See [the suite guide](docs/blacklight-desktop-suite.md).
+
+## FIH — Fish Integrated by Blacklight
+
+Install Fish through Discover or the optional package group, then install FIH from the repository root:
+
+```bash
+bash scripts/install-apps.sh --group shell
+bash fih/install.sh
+fish
+io help
+```
+
+FIH adds a Blacklight greeting and prompt, fish completions, and the local `io` command interface for InntegerOS. It requires no account, activation, or cloud service, and does not change the default login shell. See [FIH documentation](docs/fih.md).
 
 ## Desktop profile
 
