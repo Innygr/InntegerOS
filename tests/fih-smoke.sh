@@ -2,7 +2,8 @@
 set -Eeuo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_HOME="$(mktemp -d)"
-trap 'rm -rf "$TMP_HOME"' EXIT
+CUSTOM_HOME="$(mktemp -d)"
+trap 'rm -rf "$TMP_HOME" "$CUSTOM_HOME"' EXIT
 
 bash -n "$ROOT_DIR/fih/install.sh"
 bash -n "$ROOT_DIR/fih/bin/io"
@@ -29,5 +30,16 @@ test -s "$TMP_HOME/.config/fish/functions/fish_prompt.fish"
 test -s "$TMP_HOME/.local/share/integeros/fih/config"
 HOME="$TMP_HOME" XDG_CONFIG_HOME="$TMP_HOME/.config" XDG_DATA_HOME="$TMP_HOME/.local/share" \
   "$TMP_HOME/.local/bin/io" help | grep -q 'No account or network connection required'
+
+# A pre-existing custom prompt must remain byte-for-byte unchanged.
+mkdir -p "$CUSTOM_HOME/bin" "$CUSTOM_HOME/.config/fish/functions"
+printf '#!/usr/bin/env bash\nexit 0\n' > "$CUSTOM_HOME/bin/fish"
+chmod +x "$CUSTOM_HOME/bin/fish"
+printf 'function fish_prompt; echo CUSTOM; end\n' > "$CUSTOM_HOME/.config/fish/functions/fish_prompt.fish"
+cp "$CUSTOM_HOME/.config/fish/functions/fish_prompt.fish" "$CUSTOM_HOME/original-prompt"
+PATH="$CUSTOM_HOME/bin:$PATH" HOME="$CUSTOM_HOME" XDG_CONFIG_HOME="$CUSTOM_HOME/.config" XDG_DATA_HOME="$CUSTOM_HOME/.local/share" \
+  bash "$ROOT_DIR/fih/install.sh"
+cmp "$CUSTOM_HOME/original-prompt" "$CUSTOM_HOME/.config/fish/functions/fish_prompt.fish"
+test -s "$CUSTOM_HOME/.config/fish/functions/fih_prompt.fish"
 
 echo "FIH smoke tests passed."
