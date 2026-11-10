@@ -4,7 +4,8 @@ ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 TMP_HOME="$(mktemp -d)"
 trap 'rm -rf "$TMP_HOME"' EXIT
 
-bash -n "$ROOT_DIR/fih/install.sh" "$ROOT_DIR/fih/bin/io"
+bash -n "$ROOT_DIR/fih/install.sh"
+bash -n "$ROOT_DIR/fih/bin/io"
 "$ROOT_DIR/fih/bin/io" help | grep -q 'FIH // Fish Integrated by Blacklight'
 "$ROOT_DIR/fih/bin/io" version | grep -q '^FIH 0.1.0$'
 "$ROOT_DIR/fih/bin/io" info | grep -q '^Kernel:'
