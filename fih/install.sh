@@ -6,7 +6,6 @@ FIH_DIR="$ROOT_DIR/fih"
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/integeros/fih"
 BIN_DIR="${HOME}/.local/bin"
 FISH_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/fish"
-BACKUP_DIR="$DATA_DIR/backups/$(date +%Y%m%d-%H%M%S)"
 
 if [[ "$EUID" -eq 0 ]]; then
   echo "Run this installer as your normal user, not with sudo." >&2
@@ -17,7 +16,7 @@ fi
   exit 1
 }
 
-mkdir -p "$BIN_DIR" "$DATA_DIR/payload/scripts" "$DATA_DIR/payload/apps" "$FISH_DIR/conf.d" "$FISH_DIR/completions" "$FISH_DIR/functions"
+mkdir -p "$BIN_DIR" "$DATA_DIR/payload/scripts" "$FISH_DIR/conf.d" "$FISH_DIR/completions" "$FISH_DIR/functions"
 
 # Copy only the InntegerOS components that FIH dispatches to.
 for file in doctor.sh software-updater.sh desktop-profile.sh; do
