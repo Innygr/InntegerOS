@@ -14,10 +14,10 @@ FIH is the optional Team Blacklight shell integration for InntegerOS. It customi
 
 ## Install on Kubuntu
 
-Install fish through Discover or APT, then from the InntegerOS checkout:
+Install Fish through Discover or the optional package group, then from the InntegerOS checkout:
 
 ```bash
-sudo apt install fish
+bash scripts/install-apps.sh --group shell
 bash fih/install.sh
 fish
 io help
