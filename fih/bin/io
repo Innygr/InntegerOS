@@ -83,7 +83,7 @@ case "${1:-help}" in
     printf 'Kernel:   %s\n' "$(uname -r)"
     printf 'Host:     %s\n' "$(hostname)"
     printf 'Desktop:  %s\n' "${XDG_CURRENT_DESKTOP:-not detected}"
-    printf 'Shell:    %s\n' "${SHELL##*/}"
+    printf 'Shell:    %s\n' "${SHELL:-unknown}"
     if command -v plasmashell >/dev/null 2>&1; then plasmashell --version 2>/dev/null | head -n 1; fi
     ;;
   doctor)
