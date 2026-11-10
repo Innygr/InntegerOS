@@ -68,6 +68,19 @@ Install the optional compact controls panel with `bash scripts/install-quick-set
 
 Install with `bash scripts/install-blacklight-suite.sh`, then search for **Blacklight Desktop Suite**. It provides a Fish-first/Bash-fallback Konsole launcher, School/Development/Gaming/Presentation presets, animation speed controls, and shortcuts into KDE's native notification settings. See [the suite guide](docs/blacklight-desktop-suite.md).
 
+## FIH — Fish Integrated by Blacklight
+
+Install Fish through Discover or the optional package group, then install FIH from the repository root:
+
+```bash
+bash scripts/install-apps.sh --group shell
+bash fih/install.sh
+fish
+io help
+```
+
+FIH adds a Blacklight greeting and prompt, fish completions, and the local `io` command interface for InntegerOS. It requires no account, activation, or cloud service, and does not change the default login shell. See [FIH documentation](docs/fih.md).
+
 ## Desktop profile
 
 ```bash
