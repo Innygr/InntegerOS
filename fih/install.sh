@@ -16,14 +16,7 @@ fi
   exit 1
 }
 
-mkdir -p "$BIN_DIR" "$DATA_DIR/payload/scripts" "$FISH_DIR/conf.d" "$FISH_DIR/completions" "$FISH_DIR/functions"
-
-# Copy only the InntegerOS components that FIH dispatches to.
-for file in doctor.sh software-updater.sh desktop-profile.sh; do
-  if [[ -s "$ROOT_DIR/scripts/$file" ]]; then
-    install -m 0755 "$ROOT_DIR/scripts/$file" "$DATA_DIR/payload/scripts/$file"
-  fi
-done
+mkdir -p "$BIN_DIR" "$DATA_DIR" "$FISH_DIR/conf.d" "$FISH_DIR/completions" "$FISH_DIR/functions"
 
 # Preserve a pre-existing custom fish prompt rather than replacing it.
 install -m 0644 "$FIH_DIR/fish/functions/fish_prompt.fish" "$FISH_DIR/functions/fih_prompt.fish"
