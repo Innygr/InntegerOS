@@ -20,6 +20,8 @@ HOME="$TMP_HOME" XDG_CONFIG_HOME="$TMP_HOME/.config" XDG_DATA_HOME="$TMP_HOME/.l
 test -x "$TMP_HOME/.local/bin/io"
 test -s "$TMP_HOME/.config/fish/conf.d/fih.fish"
 test -s "$TMP_HOME/.config/fish/completions/io.fish"
+test -s "$TMP_HOME/.config/fish/functions/fih_prompt.fish"
+test -s "$TMP_HOME/.config/fish/functions/fish_prompt.fish"
 test -s "$TMP_HOME/.local/share/integeros/fih/config"
 HOME="$TMP_HOME" XDG_CONFIG_HOME="$TMP_HOME/.config" XDG_DATA_HOME="$TMP_HOME/.local/share" \
   "$TMP_HOME/.local/bin/io" help | grep -q 'No account or network connection required'
