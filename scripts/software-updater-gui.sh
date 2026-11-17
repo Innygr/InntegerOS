@@ -90,6 +90,37 @@ check_source() {
   fi
 }
 
+
+check_release() {
+  local local_version remote_data remote_version release_state release_url notes
+  local_version="$(head -n 1 "${ROOT_DIR}/VERSION" 2>/dev/null || echo 0)"
+  if ! command -v curl >/dev/null 2>&1 || ! command -v python3 >/dev/null 2>&1; then
+    info "Release checking needs curl and Python 3. No changes were made."
+    return
+  fi
+  if ! remote_data="$(curl --fail --silent --show-error --location --max-time 15 "${RELEASE_URL}" 2>/dev/null)"; then
+    info "Could not reach InntegerOS release information. Check your connection and try again."
+    return
+  fi
+  if ! IEO_RELEASE_DATA="$(printf '%s' "${remote_data}" | python3 -c 'import json,sys; d=json.load(sys.stdin); print("|".join(str(d.get(k,"")).replace("|"," ") for k in ("version","status","url","notes")))')"; then
+    error "The InntegerOS release information could not be read. No changes were made."
+    return
+  fi
+  IFS='|' read -r remote_version release_state release_url notes <<< "${IEO_RELEASE_DATA}"
+  if [[ -z "${remote_version}" || -z "${release_url}" ]]; then
+    error "Release information is incomplete. No changes were made."
+    return
+  fi
+  if dpkg --compare-versions "${remote_version}" gt "${local_version}"; then
+    if kdialog --title "${TITLE}" --icon integeros --yesno "A newer InntegerOS release is available.\n\nInstalled: ${local_version}\nAvailable: ${remote_version}\nStatus: ${release_state}\n\n${notes}\n\nOpen the official release page to review the update?"; then
+      xdg-open "${release_url}" >/dev/null 2>&1 &
+    fi
+  else
+    info "InntegerOS is up to date.\n\nInstalled version: ${local_version}\nLatest published version: ${remote_version}\n\nSystem package updates are checked separately."
+  fi
+  log_output "Release metadata check: installed=${local_version}; latest=${remote_version}; status=${release_state}"
+}
+
 open_system_updater() {
   if ! command -v konsole >/dev/null 2>&1; then
     error "Konsole is not installed. Open Discover or System Settings to manage system software."; return
@@ -103,11 +134,13 @@ open_system_updater() {
 while true; do
   choice="$(kdialog --title "${TITLE}" --icon integeros --menu \
     "Installed version: $(head -n 1 "${ROOT_DIR}/VERSION" 2>/dev/null || echo unknown)\nChoose an update task. Source and system updates are kept separate." \
+    "release" "Check for a newer InntegerOS release" \
     "source" "Update installed InntegerOS source checkout" \
     "system" "Ubuntu / Kubuntu system packages (terminal)" \
     "changelog" "Open InntegerOS changelog" \
     "quit" "Close" 2>/dev/null)" || exit 0
   case "${choice}" in
+    release) check_release ;;
     source) check_source ;;
     system) open_system_updater ;;
     changelog)
