@@ -41,7 +41,7 @@ have_network_tools() {
 local_version="unknown"
 [[ -r "${ROOT_DIR}/VERSION" ]] && local_version="$(head -n 1 "${ROOT_DIR}/VERSION" | tr -d '[:space:]')"
 
-check_innygros() {
+check_inntegeros() {
   echo "=== InntegerOS project update ==="
   echo "Installed checkout version: ${local_version}"
   if ! git -C "${ROOT_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -146,14 +146,14 @@ if [[ "${MODE}" == "interactive" ]]; then
   echo "4) Exit"
   read -r -p "Choose [1-4]: " choice
   case "${choice}" in
-    1) MODE="--inntegeros"; check_innygros ;;
+    1) MODE="--inntegeros"; check_inntegeros ;;
     2) MODE="--system"; check_system ;;
-    3) MODE="interactive"; check_innygros; check_system ;;
+    3) MODE="interactive"; check_inntegeros; check_system ;;
     4) exit 0 ;;
     *) echo "Invalid choice." >&2; exit 2 ;;
   esac
 elif [[ "${MODE}" == "--system" ]]; then
   check_system
 else
-  check_innygros
+  check_inntegeros
 fi
