@@ -1,0 +1,8 @@
+{
+  "product": "InntegerOS",
+  "channel": "stable",
+  "version": "0.7",
+  "status": "development",
+  "url": "https://github.com/Innygr/InntegerOS/releases",
+  "notes": "Development metadata placeholder. A published release will update this version and notes. The updater only notifies and opens the official release page; it never installs an OS release automatically."
+}\n
