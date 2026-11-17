@@ -16,7 +16,7 @@ InntegerOS is being developed toward an independent Linux distribution with one 
 
 ## Current features
 - Guided setup script and optional developer-tool installer
-- Graphical software updater in the Welcome Center for InntegerOS source updates, with a separate terminal workflow for user-approved Ubuntu/Kubuntu APT upgrades
+- Graphical software updater in the Control Center for InntegerOS release notifications and source updates, with a separate terminal workflow for user-approved Ubuntu/Kubuntu APT upgrades
 - Dark violet/cyan KDE color scheme
 - Original 1920×1080 vector wallpaper with InnyGr and Team Blacklight identity
 - Custom Konsole profile with Fira Code, violet/cyan terminal colors, and scrollback
@@ -53,7 +53,7 @@ chmod +x install.sh scripts/*.sh
 ./install.sh
 ```
 
-Open **InntegerOS Control Center** and choose **Software updater** for a graphical source-update check and confirmation. The GUI updater is installed with the InntegerOS Control Center. For terminal use, run `bash scripts/software-updater.sh --check` to check source updates without changing files, or `bash scripts/software-updater.sh` for the interactive updater. InntegerOS source updates require a clean Git checkout on `main`; APT upgrades are a separate, explicitly approved action. The GUI updater does not silently apply desktop settings after a source update.
+Open **InntegerOS Control Center** and choose **Software updates**. The graphical updater can check the official stable-release metadata and tell you when a newer InntegerOS release is available, check source commits, and open the official release page for review. Full OS releases are not installed automatically. The GUI updater is installed with the InntegerOS Control Center. For terminal use, run `bash scripts/software-updater.sh --check` to check source updates without changing files, or `bash scripts/software-updater.sh` for the interactive updater. InntegerOS source updates require a clean Git checkout on `main`; APT upgrades are a separate, explicitly approved action. The GUI updater does not silently apply desktop settings after a source update.
 
 To undo InntegerOS changes, run `./scripts/restore-defaults.sh` or see [docs/recovery.md](docs/recovery.md).
 
