@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
-# InnyGrOS 0.7 graphical update assistant.
+# InntegerOS 0.7 graphical update assistant.
 # Source updates are fast-forward-only and require a clean official checkout.
 set -Eeuo pipefail
 
-TITLE="InnyGrOS Software Updater"
-LOG_DIR="${XDG_CACHE_HOME:-${HOME}/.cache}/innygros"
+TITLE="InntegerOS Software Updater"
+LOG_DIR="${XDG_CACHE_HOME:-${HOME}/.cache}/integeros"
 LOG_FILE="${LOG_DIR}/software-updater.log"
+RELEASE_URL="https://raw.githubusercontent.com/Innygr/InntegerOS/main/release/latest.json"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 if ! git -C "${ROOT_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  if git -C "${HOME}/InnyGrOS" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    ROOT_DIR="${HOME}/InnyGrOS"
+  if git -C "${HOME}/InntegerOS" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    ROOT_DIR="${HOME}/InntegerOS"
   fi
 fi
 
@@ -23,10 +24,10 @@ if [[ -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]]; then
   exit 1
 fi
 
-info() { kdialog --title "${TITLE}" --icon innygros --msgbox "$1" >/dev/null 2>&1 || true; }
-error() { kdialog --title "${TITLE}" --icon innygros --error "$1" >/dev/null 2>&1 || true; }
+info() { kdialog --title "${TITLE}" --icon integeros --msgbox "$1" >/dev/null 2>&1 || true; }
+error() { kdialog --title "${TITLE}" --icon integeros --error "$1" >/dev/null 2>&1 || true; }
 details_error() {
-  kdialog --title "${TITLE}" --icon innygros --detailederror "$1" "$2" >/dev/null 2>&1 || true
+  kdialog --title "${TITLE}" --icon integeros --detailederror "$1" "$2" >/dev/null 2>&1 || true
 }
 log_output() {
   mkdir -p -- "${LOG_DIR}"
@@ -36,14 +37,14 @@ log_output() {
 check_source() {
   local output="" origin="" branch="" version="unknown" remote_version="unknown" behind=""
   if ! git -C "${ROOT_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    info "No Git checkout was found. Open the InnyGrOS repository folder and run bash scripts/software-updater-gui.sh there.\n\nExpected repository: ${HOME}/InnyGrOS\n\nNo files were changed."
+    info "No Git checkout was found. Open the InntegerOS repository folder and run bash scripts/software-updater-gui.sh there.\n\nExpected repository: ${HOME}/InntegerOS\n\nNo files were changed."
     return
   fi
   version="$(head -n 1 "${ROOT_DIR}/VERSION" 2>/dev/null || echo unknown)"
   origin="$(git -C "${ROOT_DIR}" remote get-url origin 2>/dev/null || true)"
   case "${origin}" in
-    https://github.com/Innygr/InnyGrOS.git|https://github.com/Innygr/InnyGrOS|git@github.com:Innygr/InnyGrOS.git|git@github.com:Innygr/InnyGrOS) ;;
-    *) error "The checkout's origin is not the official InnyGrOS repository.\n\nNo changes were made."; return ;;
+    https://github.com/Innygr/InntegerOS.git|https://github.com/Innygr/InntegerOS|git@github.com:Innygr/InntegerOS.git|git@github.com:Innygr/InntegerOS) ;;
+    *) error "The checkout's origin is not the official InntegerOS repository.\n\nNo changes were made."; return ;;
   esac
   branch="$(git -C "${ROOT_DIR}" branch --show-current)"
   if [[ "${branch}" != main ]]; then
@@ -59,11 +60,11 @@ check_source() {
   remote_version="$(git -C "${ROOT_DIR}" show origin/main:VERSION 2>/dev/null | head -n 1 || echo unknown)"
   output="Installed version: ${version}\nLatest version: ${remote_version}\nCommits available: ${behind}\n\nRepository: ${ROOT_DIR}"
   if [[ "${behind}" == 0 ]]; then
-    info "${output}\n\nInnyGrOS is up to date."
+    info "${output}\n\nInntegerOS is up to date."
     log_output "Source check: up to date. ${output}"
     return
   fi
-  if ! kdialog --title "${TITLE}" --icon innygros --yesno "${output}\n\nApply the source update now? This performs only 'git pull --ff-only origin main'. It does not install packages or apply desktop settings."; then
+  if ! kdialog --title "${TITLE}" --icon integeros --yesno "${output}\n\nApply the source update now? This performs only 'git pull --ff-only origin main'. It does not install packages or apply desktop settings."; then
     info "Update skipped. No source files changed."
     return
   fi
@@ -75,7 +76,7 @@ check_source() {
     return
   fi
   version="$(head -n 1 "${ROOT_DIR}/VERSION" 2>/dev/null || echo unknown)"
-  if [[ -f "${ROOT_DIR}/scripts/install-welcome-center.sh" ]] && kdialog --title "${TITLE}" --icon innygros --yesno "InnyGrOS source updated successfully to version ${version}.\n\nRefresh the installed Welcome Center and helper scripts now? This updates InnyGrOS application files only. It does not apply the desktop profile or install system packages."; then
+  if [[ -f "${ROOT_DIR}/scripts/install-welcome-center.sh" ]] && kdialog --title "${TITLE}" --icon integeros --yesno "InntegerOS source updated successfully to version ${version}.\n\nRefresh the installed Welcome Center and helper scripts now? This updates InntegerOS application files only. It does not apply the desktop profile or install system packages."; then
     local install_output install_status=0
     install_output="$(bash "${ROOT_DIR}/scripts/install-welcome-center.sh" 2>&1)" || install_status=$?
     log_output "Refresh Welcome Center (exit ${install_status}):\n${install_output}"
@@ -93,18 +94,18 @@ open_system_updater() {
   if ! command -v konsole >/dev/null 2>&1; then
     error "Konsole is not installed. Open Discover or System Settings to manage system software."; return
   fi
-  if ! kdialog --title "${TITLE}" --icon innygros --yesno "Open the terminal updater for Ubuntu/Kubuntu packages?\n\nIt asks before refreshing APT lists and separately before installing upgrades. Review the package list before approving."; then
+  if ! kdialog --title "${TITLE}" --icon integeros --yesno "Open the terminal updater for Ubuntu/Kubuntu packages?\n\nIt asks before refreshing APT lists and separately before installing upgrades. Review the package list before approving."; then
     return
   fi
   konsole --hold -e bash "${ROOT_DIR}/scripts/software-updater.sh" --system >/dev/null 2>&1 &
 }
 
 while true; do
-  choice="$(kdialog --title "${TITLE}" --icon innygros --menu \
+  choice="$(kdialog --title "${TITLE}" --icon integeros --menu \
     "Installed version: $(head -n 1 "${ROOT_DIR}/VERSION" 2>/dev/null || echo unknown)\nChoose an update task. Source and system updates are kept separate." \
-    "source" "Check / update InnyGrOS source" \
+    "source" "Update installed InntegerOS source checkout" \
     "system" "Ubuntu / Kubuntu system packages (terminal)" \
-    "changelog" "Open InnyGrOS changelog" \
+    "changelog" "Open InntegerOS changelog" \
     "quit" "Close" 2>/dev/null)" || exit 0
   case "${choice}" in
     source) check_source ;;
