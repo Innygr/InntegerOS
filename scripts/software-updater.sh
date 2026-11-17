@@ -1,30 +1,30 @@
 #!/usr/bin/env bash
-# InnyGrOS update assistant: checks project updates and optionally offers APT updates.
+# InntegerOS update assistant: checks project updates and optionally offers APT updates.
 # It never runs as root, never changes boot configuration, and refuses dirty Git trees.
 set -Eeuo pipefail
 
-VERSION_URL="https://raw.githubusercontent.com/Innygr/InnyGrOS/main/VERSION"
+VERSION_URL="https://raw.githubusercontent.com/Innygr/InntegerOS/main/VERSION"
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 MODE="${1:-interactive}"
 
 usage() {
   cat <<'EOF'
-InnyGrOS Software Updater
+InntegerOS Software Updater
 
-Usage: scripts/software-updater.sh [--check | --innygros | --system]
+Usage: scripts/software-updater.sh [--check | --inntegeros | --system]
 
-  --check     Check for InnyGrOS and APT updates without changing anything
-  --innygros Check/apply InnyGrOS repository updates only
+  --check     Check for InntegerOS and APT updates without changing anything
+  --inntegeros Check/apply InntegerOS repository updates only
   --system    Check/apply Ubuntu/Kubuntu package updates only
   (no option) Interactive menu
 
-Run as your normal user, not with sudo. InnyGrOS updates require this folder
+Run as your normal user, not with sudo. InntegerOS updates require this folder
 to be a Git checkout. System package updates use APT and ask before upgrading.
 EOF
 }
 
 case "$MODE" in
-  --check|--innygros|--system|interactive) ;;
+  --check|--inntegeros|--system|interactive) ;;
   -h|--help) usage; exit 0 ;;
   *) echo "Unknown option: $MODE" >&2; usage >&2; exit 2 ;;
 esac
@@ -42,11 +42,11 @@ local_version="unknown"
 [[ -r "${ROOT_DIR}/VERSION" ]] && local_version="$(head -n 1 "${ROOT_DIR}/VERSION" | tr -d '[:space:]')"
 
 check_innygros() {
-  echo "=== InnyGrOS project update ==="
+  echo "=== InntegerOS project update ==="
   echo "Installed checkout version: ${local_version}"
   if ! git -C "${ROOT_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo "This copy is not a Git checkout, so safe in-place updates are unavailable."
-    echo "Get the latest source from the official InnyGrOS GitHub repository."
+    echo "Get the latest source from the official InntegerOS GitHub repository."
     return 2
   fi
   if ! have_network_tools; then return 2; fi
@@ -75,34 +75,34 @@ check_innygros() {
     return 2
   fi
   case "${origin_url}" in
-    https://github.com/Innygr/InnyGrOS.git|https://github.com/Innygr/InnyGrOS|git@github.com:Innygr/InnyGrOS.git|git@github.com:Innygr/InnyGrOS) ;;
-    *) echo "Git origin is not the official InnyGrOS repository; refusing automatic updates." >&2; return 2 ;;
+    https://github.com/Innygr/InntegerOS.git|https://github.com/Innygr/InntegerOS|git@github.com:Innygr/InntegerOS.git|git@github.com:Innygr/InntegerOS) ;;
+    *) echo "Git origin is not the official InntegerOS repository; refusing automatic updates." >&2; return 2 ;;
   esac
   git -C "${ROOT_DIR}" fetch --quiet origin main || { echo "Could not fetch the latest GitHub changes."; return 2; }
   local behind
   behind="$(git -C "${ROOT_DIR}" rev-list --count HEAD..origin/main)"
   if [[ "${behind}" == "0" ]]; then
-    echo "InnyGrOS source is up to date."
+    echo "InntegerOS source is up to date."
     return 0
   fi
   echo "Update available: ${behind} commit(s) behind origin/main."
   [[ "${MODE}" == "--check" ]] && return 0
-  if [[ "${MODE}" != "--innygros" && ! -t 0 ]]; then
-    echo "Non-interactive mode: no files changed. Re-run with --innygros to apply."
+  if [[ "${MODE}" != "--inntegeros" && ! -t 0 ]]; then
+    echo "Non-interactive mode: no files changed. Re-run with --inntegeros to apply."
     return 0
   fi
   local answer="n"
-  if [[ "${MODE}" == "--innygros" ]]; then
-    read -r -p "Apply InnyGrOS source update with git pull --ff-only? [y/N] " answer
+  if [[ "${MODE}" == "--inntegeros" ]]; then
+    read -r -p "Apply InntegerOS source update with git pull --ff-only? [y/N] " answer
   else
-    read -r -p "Update InnyGrOS source now? [y/N] " answer
+    read -r -p "Update InntegerOS source now? [y/N] " answer
   fi
   case "${answer,,}" in
     y|yes)
       git -C "${ROOT_DIR}" pull --ff-only origin main
       echo "Source updated. Review the changelog before re-running any setup/install scripts."
       ;;
-    *) echo "Skipped InnyGrOS source update." ;;
+    *) echo "Skipped InntegerOS source update." ;;
   esac
 }
 
@@ -139,14 +139,14 @@ check_system() {
 
 if [[ "${MODE}" == "interactive" ]]; then
   if [[ ! -t 0 ]]; then echo "Interactive mode requires a terminal; use --check for read-only mode." >&2; exit 2; fi
-  echo "InnyGrOS Software Updater"
-  echo "1) Check/apply InnyGrOS project updates"
+  echo "InntegerOS Software Updater"
+  echo "1) Check/apply InntegerOS project updates"
   echo "2) Check/apply Ubuntu/Kubuntu package updates"
   echo "3) Do both"
   echo "4) Exit"
   read -r -p "Choose [1-4]: " choice
   case "${choice}" in
-    1) MODE="--innygros"; check_innygros ;;
+    1) MODE="--inntegeros"; check_innygros ;;
     2) MODE="--system"; check_system ;;
     3) MODE="interactive"; check_innygros; check_system ;;
     4) exit 0 ;;
