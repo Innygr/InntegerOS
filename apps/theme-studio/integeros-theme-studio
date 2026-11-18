@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""InntegerOS Theme Studio: desktop theme presets and KDE appearance controls."""
+"""InntegerOS Theme Studio: paired light/dark KDE desktop presets."""
 from __future__ import annotations
 
 import shutil
@@ -9,7 +9,6 @@ from pathlib import Path
 from tkinter import messagebox
 
 APP_NAME = "InntegerOS Theme Studio"
-COLOR_SCHEME = "InnyGrOS"
 SCHEME_DIRS = (
     Path.home() / ".local/share/color-schemes",
     Path("/usr/local/share/color-schemes"),
@@ -20,14 +19,17 @@ WALLPAPER_HELPERS = (
     Path.home() / ".local/share/integeros/scripts/apply-wallpaper.sh",
 )
 
-# Each preset resolves to an installed KDE colour-scheme file. Kubuntu Dark
-# prefers a Kubuntu-provided scheme and safely falls back to Breeze Dark.
-PRESETS = (
-    ("InntegerOS Dark", "Violet accents with a deep navy desktop.", ("InnyGrOS",)),
-    ("Kubuntu Dark", "Kubuntu's dark scheme when installed; otherwise Breeze Dark.",
+# Every family offers both modes. Kubuntu schemes are preferred when installed;
+# the matching Breeze scheme is the safe fallback on stock KDE installations.
+THEMES = (
+    ("InntegerOS", "Official violet/cyan branding",
+     ("InntegerOS Light", "InntegerOSLight", "InnyGrOSLight"),
+     ("InntegerOS Dark", "InnyGrOS", "InntegerOSDark")),
+    ("Kubuntu", "Kubuntu palette where available; Breeze fallback",
+     ("KubuntuLight", "Kubuntu", "BreezeLight"),
      ("KubuntuDark", "Kubuntu", "BreezeDark")),
-    ("Breeze Light", "The clean, bright KDE Breeze appearance.", ("BreezeLight",)),
-    ("Breeze Dark", "The standard dark KDE Breeze appearance.", ("BreezeDark",)),
+    ("Breeze", "KDE's classic desktop appearance",
+     ("BreezeLight",), ("BreezeDark",)),
 )
 
 
@@ -43,19 +45,6 @@ def find_wallpaper_helper() -> Path | None:
     return next((path for path in WALLPAPER_HELPERS if path.is_file()), None)
 
 
-def show_command_result(command: list[str], description: str) -> bool:
-    try:
-        result = subprocess.run(command, check=False, text=True, capture_output=True, timeout=90)
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        messagebox.showerror(APP_NAME, f"{description} could not be started.\n\n{exc}")
-        return False
-    if result.returncode:
-        detail = (result.stderr or result.stdout).strip()
-        messagebox.showwarning(APP_NAME, f"{description} did not complete.\n\n{detail or 'No details were provided.'}")
-        return False
-    return True
-
-
 def open_settings(module: str) -> None:
     executable = shutil.which("systemsettings")
     if not executable:
@@ -67,121 +56,124 @@ def open_settings(module: str) -> None:
         messagebox.showerror(APP_NAME, f"Could not open System Settings.\n\n{exc}")
 
 
-def apply_preset(label: str, candidates: tuple[str, ...], available: set[str]) -> None:
-    executable = shutil.which("plasma-apply-colorscheme")
-    if not executable:
-        messagebox.showerror(APP_NAME, "plasma-apply-colorscheme was not found. Open KDE's Colors settings instead.")
-        open_settings("kcm_colors")
-        return
+def apply_scheme(family: str, mode: str, candidates: tuple[str, ...], available: set[str]) -> None:
     scheme = next((candidate for candidate in candidates if candidate in available), None)
     if not scheme:
         messagebox.showwarning(
             APP_NAME,
-            f"{label} is not installed on this system.\n\n"
-            "No packages or themes were downloaded. Open Colors & Themes to see available schemes.",
+            f"{family} {mode} is not installed.\n\n"
+            "No theme was downloaded. Open KDE Colors settings to browse available schemes.",
         )
         open_settings("kcm_colors")
         return
-    if show_command_result([executable, scheme], f"Applying {label}"):
-        note = f"\n\nKDE colour scheme: {scheme}"
-        if label == "Kubuntu Dark" and scheme != "KubuntuDark":
-            note += "\nThe Kubuntu-specific scheme was not found, so Breeze Dark was used."
-        messagebox.showinfo(APP_NAME, f"{label} applied.{note}")
-
-
-def apply_colors() -> None:
-    apply_preset("InntegerOS Dark", (COLOR_SCHEME,), installed_scheme_ids())
+    executable = shutil.which("plasma-apply-colorscheme")
+    if not executable:
+        messagebox.showerror(APP_NAME, "plasma-apply-colorscheme was not found.")
+        open_settings("kcm_colors")
+        return
+    try:
+        result = subprocess.run([executable, scheme], check=False, text=True,
+                                capture_output=True, timeout=90)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        messagebox.showerror(APP_NAME, f"Could not apply {family} {mode}.\n\n{exc}")
+        return
+    if result.returncode:
+        detail = (result.stderr or result.stdout).strip()
+        messagebox.showwarning(APP_NAME, f"Applying {family} {mode} failed.\n\n{detail or 'No details provided.'}")
+        return
+    fallback = ""
+    if family == "Kubuntu" and scheme.startswith("Breeze"):
+        fallback = f"\n\nThe Kubuntu-specific scheme was not found, so {scheme} was used."
+    messagebox.showinfo(APP_NAME, f"{family} {mode} applied using {scheme}.{fallback}")
 
 
 def choose_wallpaper() -> None:
     helper = find_wallpaper_helper()
     if helper:
-        show_command_result(["bash", str(helper), "--choose"], "Opening the wallpaper chooser")
+        try:
+            result = subprocess.run(["bash", str(helper), "--choose"], check=False,
+                                    text=True, capture_output=True, timeout=90)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            messagebox.showerror(APP_NAME, f"Wallpaper chooser could not start.\n\n{exc}")
+            return
+        if result.returncode:
+            messagebox.showwarning(APP_NAME, (result.stderr or result.stdout).strip() or "Wallpaper chooser failed.")
         return
-    messagebox.showwarning(APP_NAME, "The InntegerOS wallpaper helper was not found. KDE Wallpaper settings will open.")
     open_settings("kcm_wallpaper")
 
 
 def build_window() -> tk.Tk:
     root = tk.Tk()
     root.title(APP_NAME)
-    root.geometry("720x760")
-    root.minsize(600, 650)
+    root.geometry("760x700")
+    root.minsize(650, 620)
     root.configure(bg="#090b18")
 
-    title = tk.Label(root, text="THEME STUDIO", bg="#090b18", fg="#55eaff",
-                     font=("DejaVu Sans", 23, "bold"))
-    title.pack(anchor="w", padx=28, pady=(24, 4))
-    subtitle = tk.Label(
+    tk.Label(root, text="THEME STUDIO", bg="#090b18", fg="#55eaff",
+             font=("DejaVu Sans", 23, "bold")).pack(anchor="w", padx=28, pady=(22, 4))
+    tk.Label(
         root,
-        text="Choose a desktop look. Presets change KDE's colour scheme; wallpapers, icons and other settings stay untouched.",
-        bg="#090b18", fg="#b8bfdc", font=("DejaVu Sans", 10), wraplength=650, justify="left",
-    )
-    subtitle.pack(anchor="w", padx=30, pady=(0, 18))
+        text="Every theme family has a light and dark option. Applying a preset changes the KDE colour scheme only.",
+        bg="#090b18", fg="#b8bfdc", font=("DejaVu Sans", 10), wraplength=690, justify="left",
+    ).pack(anchor="w", padx=30, pady=(0, 18))
 
-    section = tk.Label(root, text="DESKTOP THEME PRESETS", bg="#090b18", fg="#a58bff",
-                       font=("DejaVu Sans", 11, "bold"))
-    section.pack(anchor="w", padx=30, pady=(4, 6))
-
+    tk.Label(root, text="LIGHT  /  DARK PRESETS", bg="#090b18", fg="#a58bff",
+             font=("DejaVu Sans", 11, "bold")).pack(anchor="w", padx=30, pady=(0, 7))
     available = installed_scheme_ids()
 
-    def theme_card(label: str, detail: str, candidates: tuple[str, ...]) -> None:
-        scheme = next((candidate for candidate in candidates if candidate in available), None)
-        row = tk.Frame(root, bg="#151a30", highlightbackground="#30395c", highlightthickness=1)
-        row.pack(fill="x", padx=28, pady=4)
-        text_box = tk.Frame(row, bg="#151a30")
-        text_box.pack(side="left", fill="both", expand=True, padx=13, pady=9)
-        tk.Label(text_box, text=label, bg="#151a30", fg="#f1f3ff",
-                 font=("DejaVu Sans", 10, "bold")).pack(anchor="w")
-        tk.Label(text_box, text=detail, bg="#151a30", fg="#aeb7d4",
-                 font=("DejaVu Sans", 9), wraplength=420, justify="left").pack(anchor="w", pady=(2, 0))
-        status = "Available" if scheme else "Not installed"
-        tk.Label(text_box, text=status, bg="#151a30", fg="#73dfb0" if scheme else "#e6b86a",
-                 font=("DejaVu Sans", 8, "bold")).pack(anchor="w", pady=(3, 0))
-        tk.Button(
-            row, text="APPLY" if scheme else "VIEW", 
-            command=(lambda l=label, c=candidates: apply_preset(l, c, available)) if scheme
-                    else (lambda: open_settings("kcm_colors")),
-            bg="#24304d", fg="#55eaff", activebackground="#35466e",
-            activeforeground="#ffffff", relief="flat", padx=14, pady=7, cursor="hand2",
-        ).pack(side="right", padx=12)
+    for family, description, light_candidates, dark_candidates in THEMES:
+        card = tk.Frame(root, bg="#151a30", highlightbackground="#30395c", highlightthickness=1)
+        card.pack(fill="x", padx=28, pady=5)
+        info = tk.Frame(card, bg="#151a30")
+        info.pack(fill="x", padx=14, pady=(9, 4))
+        tk.Label(info, text=family, bg="#151a30", fg="#f1f3ff",
+                 font=("DejaVu Sans", 11, "bold")).pack(anchor="w")
+        tk.Label(info, text=description, bg="#151a30", fg="#aeb7d4",
+                 font=("DejaVu Sans", 9)).pack(anchor="w", pady=(2, 0))
+        buttons = tk.Frame(card, bg="#151a30")
+        buttons.pack(fill="x", padx=10, pady=(4, 10))
+        for mode, candidates, label in (
+            ("Light", light_candidates, "☀  LIGHT"),
+            ("Dark", dark_candidates, "☾  DARK"),
+        ):
+            found = next((name for name in candidates if name in available), None)
+            status = "Available" if found else "Not installed"
+            group = tk.Frame(buttons, bg="#151a30")
+            group.pack(side="left", expand=True, fill="x", padx=4)
+            tk.Button(
+                group, text=label,
+                command=lambda f=family, m=mode, c=candidates: apply_scheme(f, m, c, available),
+                bg="#e7eaf4" if mode == "Light" else "#24304d",
+                fg="#20243a" if mode == "Light" else "#55eaff",
+                activebackground="#cbd5eb" if mode == "Light" else "#35466e",
+                activeforeground="#20243a" if mode == "Light" else "#ffffff",
+                relief="flat", padx=12, pady=8, cursor="hand2",
+            ).pack(fill="x")
+            tk.Label(group, text=f"{status}: {found}" if found else status,
+                     bg="#151a30", fg="#73dfb0" if found else "#e6b86a",
+                     font=("DejaVu Sans", 8)).pack(anchor="w", pady=(3, 0))
 
-    for preset in PRESETS:
-        theme_card(*preset)
+    tk.Label(root, text="MORE APPEARANCE SETTINGS", bg="#090b18", fg="#a58bff",
+             font=("DejaVu Sans", 11, "bold")).pack(anchor="w", padx=30, pady=(13, 5))
 
-    tk.Button(
-        root, text="SYSTEM DEFAULT / MORE COLOUR SCHEMES",
-        command=lambda: open_settings("kcm_colors"), bg="#30294c", fg="#e4dcff",
-        activebackground="#403763", activeforeground="#ffffff",
-        relief="flat", padx=12, pady=9, cursor="hand2",
-    ).pack(fill="x", padx=28, pady=(8, 12))
+    row = tk.Frame(root, bg="#151a30")
+    row.pack(fill="x", padx=28, pady=3)
+    tk.Button(row, text="KDE COLOUR SETTINGS / SYSTEM DEFAULT",
+              command=lambda: open_settings("kcm_colors"), bg="#30294c", fg="#e4dcff",
+              activebackground="#403763", activeforeground="#ffffff",
+              relief="flat", padx=12, pady=9).pack(fill="x", padx=8, pady=7)
 
-    section2 = tk.Label(root, text="OTHER APPEARANCE SETTINGS", bg="#090b18", fg="#a58bff",
-                        font=("DejaVu Sans", 11, "bold"))
-    section2.pack(anchor="w", padx=30, pady=(6, 4))
-
-    def action(label: str, detail: str, command) -> None:
-        row = tk.Frame(root, bg="#151a30", highlightbackground="#30395c", highlightthickness=1)
-        row.pack(fill="x", padx=28, pady=3)
-        text_box = tk.Frame(row, bg="#151a30")
-        text_box.pack(side="left", fill="both", expand=True, padx=12, pady=7)
-        tk.Label(text_box, text=label, bg="#151a30", fg="#f1f3ff",
-                 font=("DejaVu Sans", 9, "bold")).pack(anchor="w")
-        tk.Label(text_box, text=detail, bg="#151a30", fg="#aeb7d4",
-                 font=("DejaVu Sans", 8), wraplength=440, justify="left").pack(anchor="w", pady=(1, 0))
-        tk.Button(row, text="OPEN", command=command, bg="#24304d", fg="#55eaff",
+    row2 = tk.Frame(root, bg="#151a30")
+    row2.pack(fill="x", padx=28, pady=3)
+    for label, module in (("Wallpaper", None), ("Icons", "kcm_icons"),
+                          ("Global theme", "kcm_lookandfeel"), ("Fonts", "kcm_fonts")):
+        command = choose_wallpaper if module is None else lambda m=module: open_settings(m)
+        tk.Button(row2, text=label, command=command, bg="#24304d", fg="#55eaff",
                   activebackground="#35466e", activeforeground="#ffffff",
-                  relief="flat", padx=12, pady=6, cursor="hand2").pack(side="right", padx=10)
+                  relief="flat", padx=10, pady=8).pack(side="left", expand=True, fill="x", padx=4, pady=7)
 
-    action("Wallpaper", "Choose a desktop background.", choose_wallpaper)
-    action("Icons and cursors", "Manage icon and pointer themes.", lambda: open_settings("kcm_icons"))
-    action("Global theme", "Explore full Plasma themes and layouts.", lambda: open_settings("kcm_lookandfeel"))
-    action("Fonts", "Adjust interface and application fonts.", lambda: open_settings("kcm_fonts"))
-
-    tk.Label(
-        root, text="Presets only apply installed KDE colour schemes. No themes are downloaded and no system-wide files are modified.",
-        bg="#090b18", fg="#7f89a8", font=("DejaVu Sans", 8), wraplength=650,
-    ).pack(anchor="w", padx=30, pady=(12, 16))
+    tk.Label(root, text="Colour presets do not alter wallpaper, icons, cursor, fonts, or Plasma layout.",
+             bg="#090b18", fg="#7f89a8", font=("DejaVu Sans", 8)).pack(anchor="w", padx=30, pady=12)
     return root
 
 
