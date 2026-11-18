@@ -1,6 +1,6 @@
-# IntegerOS Theme Studio
+# InntegerOS Theme Studio
 
-A small, user-scoped GUI for common KDE appearance tasks. The first release deliberately reuses KDE's own settings modules and IntegerOS's existing wallpaper helper rather than writing directly to Plasma configuration files.
+A user-scoped GUI for applying desktop colour presets and opening KDE's native appearance settings.
 
 ## Install
 
@@ -10,15 +10,24 @@ From the repository root:
 bash scripts/install-theme-studio.sh
 ```
 
-Then search the KDE application launcher for **IntegerOS Theme Studio**. It requires Python 3 with Tkinter and KDE System Settings. On Kubuntu, install Tkinter if needed with `sudo apt install python3-tk`.
+Then search the KDE application launcher for **InntegerOS Theme Studio**. It requires Python 3 with Tkinter and KDE System Settings. On Kubuntu, install Tkinter if needed with `sudo apt install python3-tk`.
 
-## Included actions
+## Desktop theme presets
 
-- Apply the existing InnyGrOS violet/cyan colour scheme using `plasma-apply-colorscheme`.
-- Open the existing wallpaper chooser helper; if it is unavailable, open KDE Wallpaper settings.
-- Open KDE's icon, cursor, global theme, and font settings modules.
+Theme Studio detects colour-scheme files already installed on the system and offers:
 
-The app does not install themes, download assets, edit system-wide files, or change settings until an action is selected. Icon, cursor, global theme, and font choices are managed by KDE System Settings.
+- **InntegerOS Dark** — the official violet/cyan `InnyGrOS` colour scheme.
+- **Kubuntu Dark** — prefers a Kubuntu-provided dark scheme if present; otherwise uses Breeze Dark.
+- **Breeze Light** — KDE's standard light colour scheme.
+- **Breeze Dark** — KDE's standard dark colour scheme.
+- **System Default / More Colour Schemes** — opens KDE's native Colors settings so the user can choose another installed scheme or restore their preferred default.
+
+A preset changes only the KDE colour scheme. It does not change the wallpaper, icons, cursor, fonts, Plasma layout, login screen, or boot theme. If a scheme is not installed, Theme Studio reports that and opens KDE's colour settings; it does not download or install theme packages.
+
+## Other appearance controls
+
+- Wallpaper chooser using the existing InntegerOS wallpaper helper; falls back to KDE Wallpaper settings.
+- KDE settings shortcuts for icons, cursors, global themes, and fonts.
 
 ## Uninstall
 
