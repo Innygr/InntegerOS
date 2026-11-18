@@ -11,16 +11,16 @@ status_output="$(python3 "$APP" status)"
 grep -q "Agent service: inactive" <<<"$status_output"
 
 mkdir -p "$TMP/bin"
-cat > "$TMP/bin/loginctl" <<'MOCK'
+cat > "$TMP/bin/qdbus6" <<'MOCK'
 #!/usr/bin/env bash
-[[ "$*" == "lock-session self" ]] || exit 9
+[[ "$*" == "org.freedesktop.ScreenSaver /ScreenSaver Lock" ]] || exit 9
 touch "$MOCK_LOCK_MARKER"
 MOCK
-chmod +x "$TMP/bin/loginctl"
+chmod +x "$TMP/bin/qdbus6"
 export MOCK_LOCK_MARKER="$TMP/lock-called"
 export PATH="$TMP/bin:$PATH"
 
-python3 "$APP" lock | grep -q "Native session lock requested"
+python3 "$APP" lock | grep -q "KDE desktop lock requested"
 test -f "$MOCK_LOCK_MARKER"
 python3 "$APP" status | grep -q "Last action: lock-requested"
 
