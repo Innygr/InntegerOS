@@ -1,0 +1,85 @@
+name: Build InntegerOS ISO
+
+on:
+  workflow_run:
+    workflows: ["Validate InnyGrOS scripts and assets"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integeros-iso-build-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  build-iso:
+    name: Build ISO after successful validation
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_branch == 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out the exact validated commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 1
+
+      - name: Confirm validation event
+        env:
+          VALIDATED_SHA: ${{ github.event.workflow_run.head_sha }}
+          VALIDATION_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: |
+          set -euo pipefail
+          test "${VALIDATION_CONCLUSION}" = success
+          test "$(git rev-parse HEAD)" = "${VALIDATED_SHA}"
+          echo "Building the exact commit that passed Validate: ${VALIDATED_SHA}"
+
+      - name: Install ISO build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            curl xorriso squashfs-tools rsync jq python3
+
+      - name: Verify Kubuntu source metadata
+        run: |
+          set -euo pipefail
+          bash ./scripts/verify-kubuntu-source.sh --metadata-only
+
+      - name: Build InntegerOS ISO
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! -x ./scripts/build-kubuntu-iso.sh ]]; then
+            echo "::error::The ISO build workflow is wired up, but scripts/build-kubuntu-iso.sh has not been implemented yet."
+            exit 1
+          fi
+          ./scripts/build-kubuntu-iso.sh
+
+      - name: Validate ISO output and generate checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          images=(iso/build/output/*.iso)
+          if (( ${#images[@]} != 1 )); then
+            echo "::error::Expected exactly one ISO in iso/build/output; found ${#images[@]}."
+            exit 1
+          fi
+          mkdir -p iso/build/output
+          sha256sum "${images[0]}" > "${images[0]}.sha256"
+          xorriso -indev "${images[0]}" -toc
+
+      - name: Upload InntegerOS ISO artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: InntegerOS-ISO-${{ github.event.workflow_run.head_sha }}
+          path: |
+            iso/build/output/*.iso
+            iso/build/output/*.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
