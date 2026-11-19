@@ -114,6 +114,7 @@ sudo mkdir -p "${WORK_DIR}/live-root/opt/InntegerOS"
 sudo rsync -a --delete \
   --exclude='.git/' \
   --exclude='iso/build/' \
+  --exclude='dist/' \
   --exclude='.github/' \
   --exclude='*.iso' \
   --exclude='*.sha256' \
