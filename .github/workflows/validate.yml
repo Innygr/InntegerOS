@@ -83,13 +83,14 @@ jobs:
       - name: Blacklight QML patcher fixture test
         run: python3 ./tests/blacklight-lockscreen-patcher.py
 
-      - name: InntegerOS ISO manifest and preflight checks
+      - name: InntegerOS ISO manifest and source-verifier checks
         shell: bash
         run: |
           set -euo pipefail
-          bash -n ./scripts/iso-preflight.sh
+          bash -n ./scripts/iso-preflight.sh ./scripts/verify-kubuntu-source.sh ./tests/verify-kubuntu-source-fixture.sh
           bash ./scripts/iso-preflight.sh
           python3 ./tests/iso-manifest-smoke.py
+          bash ./tests/verify-kubuntu-source-fixture.sh
 
       - name: Run read-only performance snapshot
         shell: bash
