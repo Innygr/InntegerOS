@@ -46,11 +46,11 @@ The base release, image-building method, and installer engine must be evaluated 
 - Do not test installation on the user's daily-use dual-boot laptop until the image has passed VM testing and a separate backup/recovery plan is confirmed.
 - If installation testing is not complete by the end of November, December's deliverable can be a live-image preview rather than an unsafe or untested installer.
 
-## Current status — November 5, 2026
+## Current status — November 18, 2026
 
-**Stage: architecture preparation and build-tool evaluation; no ISO build proof-of-concept yet.** The repository now contains an ISO build-area scaffold and a preliminary comparison of `livecd-rootfs`, `live-build`, and `mkosi`. No builder is selected and no image has been built. The repository contains the desktop customization project and design documents, but no `iso/` build configuration, image-generation script, live image artifact, or VM boot-test report. The build-system milestone has not started.
+**Stage: ISO project preparation; no image build proof-of-concept yet.** The repository now contains shared and Plasma package-candidate manifests, opt-in development/creative/gaming bundles, a VM acceptance checklist, build-metadata requirements, and a machine-readable `iso/manifest.json`. A read-only preflight and CI smoke test validate the structure. These are preparation assets only: no image builder or installer backend has been selected, no builder-specific configuration or image-generation script exists, and no ISO has been produced or boot-tested.
 
-The next concrete deliverable is a documented base/tooling decision and a reproducible InntegerOS Plasma live-image proof of concept. Only after that image exists can live-session and installer testing begin.
+The next concrete deliverable is a disposable-environment tooling spike that compares the Ubuntu image pipeline with `live-build`, resolves the package candidates against the selected Ubuntu repositories, and produces the smallest repeatable Plasma live-image prototype. Only after that image exists can live-session and installer testing begin.
 
 ## Installation architecture
 
