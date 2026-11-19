@@ -306,11 +306,22 @@ class ControlCenter:
             self._run_script("apply-terminal-profile.sh")
         self.status.set("First steps guide completed.")
 
+    def _open_experimental_boot_studio(self) -> None:
+        if not messagebox.askyesno(
+            TITLE,
+            "EXPERIMENTAL FEATURE — Deep Space Boot Studio\n\n"
+            "GRUB customization is disabled by default. Opening the studio does not change your boot configuration. "
+            "Any installation or removal action requires a separate confirmation inside the studio.\n\n"
+            "Continue?"
+        ):
+            return
+        self._run_script("boot-studio.sh")
+
     def _build_system(self, page: tk.Frame) -> None:
         self._section(page, "Maintenance & updates", "System utilities formerly listed in the Welcome Center.")
         items = [
             ("Software updater", "Update InntegerOS components and optionally system packages.", lambda: self._run_script("software-updater-gui.sh")),
-            ("Deep Space Boot Studio", "Configure the GRUB theme and boot options.", lambda: self._run_script("boot-studio.sh")),
+            ("Deep Space Boot Studio — EXPERIMENTAL", "EXPERIMENTAL: GRUB customization is off by default. Opening the studio makes no changes; installation requires a separate confirmation.", self._open_experimental_boot_studio),
             ("Installation doctor", "Check the InntegerOS installation for missing or inconsistent components.", lambda: self._run_script("doctor.sh", "--gui")),
             ("Laptop hardware check", "Read-only hardware and compatibility report.", lambda: self._run_script("hardware-check.sh", "--gui")),
             ("Performance snapshot", "Capture a read-only performance report.", lambda: self._run_script("performance-benchmark.sh", "--gui")),
@@ -389,7 +400,7 @@ class ControlCenter:
                          REPO / "apps/blacklight-control/blacklight-control"), PURPLE)
         self._button(page, "Screensaver settings", "Check Blacklight screensaver dependencies and secure idle-lock status.",
                      lambda: self._run_script("blacklight-screensaver.sh", "status"), PURPLE)
-        self._button(page, "Lockscreen controls", "Check the native Plasma lockscreen overlay and backup status (read-only).",
+        self._button(page, "Lockscreen controls — EXPERIMENTAL", "EXPERIMENTAL: the Blacklight overlay is not applied by default. This status check is read-only; installation requires a separate explicit action.",
                      lambda: self._run_script("blacklight-lockscreen.sh", "status"), PURPLE)
         self._button(page, "About InntegerOS", "View the project version and installation details.",
                      self._about)
