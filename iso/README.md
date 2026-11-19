@@ -32,7 +32,8 @@ The exact remastering toolchain is not yet selected. A prototype must demonstrat
 - `manifests/` — explicit base and edition package lists
 - `profiles/` — desktop-specific package and configuration profiles
 - `hooks/` and `config/` — narrowly scoped image customizations
-- `build/` — generated configuration/output only; never commit large generated ISOs
+- `build/` — downloaded source ISO and temporary build workspace; never commit generated files
+- `../dist/` — final successful ISO, SHA256 checksum, build metadata, and boot-catalog report; ignored by Git and uploaded as the workflow artifact
 - `../scripts/iso-preflight.sh` — read-only structural validation
 - `../tests/iso-manifest-smoke.py` — CI validation
 
@@ -51,4 +52,4 @@ Stable features form the default experience. Experimental features may be shippe
 
 ## Current gate
 
-The first-pass builder is `../scripts/build-kubuntu-iso.sh`. The separate `Build InntegerOS ISO` workflow is triggered only when the `Validate InnyGrOS scripts and assets` workflow succeeds on `main`; it checks out that exact validated commit and uploads the ISO plus checksum. The current builder embeds the repository payload in the live filesystem and preserves the source El Torito boot configuration. It intentionally does not install the proposal-only package manifests. A completed workflow artifact is still only a development prototype until UEFI live boot and installation pass in disposable VMs. See [Image-Build Tool Evaluation](../docs/IMAGE-BUILD-TOOLS.md) and [ISO Roadmap](../docs/ISO-ROADMAP.md).
+The first-pass builder is `../scripts/build-kubuntu-iso.sh`. The separate `Build InntegerOS ISO` workflow is triggered only when the `Validate InnyGrOS scripts and assets` workflow succeeds on `main`; it checks out that exact validated commit and writes a completed ISO to `../dist/` and uploads it only after checksum verification and El Torito boot-catalog checks pass. The local success path is `dist/InntegerOS-<version>-Plasma-amd64.iso`; its checksum is the adjacent `.sha256` file. The current builder embeds the repository payload in the live filesystem and preserves the source El Torito boot configuration. It intentionally does not install the proposal-only package manifests. A completed workflow artifact is still only a development prototype until UEFI live boot and installation pass in disposable VMs. See [Image-Build Tool Evaluation](../docs/IMAGE-BUILD-TOOLS.md) and [ISO Roadmap](../docs/ISO-ROADMAP.md).
