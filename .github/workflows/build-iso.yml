@@ -64,22 +64,34 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          images=(iso/build/output/*.iso)
+          images=(dist/*.iso)
           if (( ${#images[@]} != 1 )); then
-            echo "::error::Expected exactly one ISO in iso/build/output; found ${#images[@]}."
+            echo "::error::Expected exactly one ISO in dist/; found ${#images[@]}."
             exit 1
           fi
-          mkdir -p iso/build/output
-          sha256sum "${images[0]}" > "${images[0]}.sha256"
+          test -s "${images[0]}.sha256"
+          (cd dist && sha256sum --check "$(basename "${images[0]}").sha256")
+          xorriso -indev "${images[0]}" -report_el_torito plain > dist/boot-catalog.txt
+          grep -q "El Torito" dist/boot-catalog.txt
           xorriso -indev "${images[0]}" -toc
+          {
+            echo "## InntegerOS ISO build succeeded"
+            echo
+            echo "- **ISO path:** `${images[0]}`"
+            echo "- **Checksum:** `${images[0]}.sha256`"
+            echo "- **Validated commit:** `${{ github.event.workflow_run.head_sha }}`"
+            echo "- **Boot catalog:** El Torito detected"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload InntegerOS ISO artifact
         uses: actions/upload-artifact@v6
         with:
           name: InntegerOS-ISO-${{ github.event.workflow_run.head_sha }}
           path: |
-            iso/build/output/*.iso
-            iso/build/output/*.sha256
+            dist/*.iso
+            dist/*.iso.sha256
+            dist/BUILD-METADATA.txt
+            dist/boot-catalog.txt
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
