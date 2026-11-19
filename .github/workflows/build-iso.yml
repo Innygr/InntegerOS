@@ -53,11 +53,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! -x ./scripts/build-kubuntu-iso.sh ]]; then
+          if [[ ! -f ./scripts/build-kubuntu-iso.sh ]]; then
             echo "::error::The ISO build workflow is wired up, but scripts/build-kubuntu-iso.sh has not been implemented yet."
             exit 1
           fi
-          ./scripts/build-kubuntu-iso.sh
+          bash ./scripts/build-kubuntu-iso.sh
 
       - name: Validate ISO output and generate checksum
         shell: bash
