@@ -5,6 +5,8 @@ An Ubuntu-based desktop customization project built on Kubuntu + KDE Plasma.
 
 > Early development: this repository is not yet a standalone operating system or installable ISO.
 
+[![Validate InnyGrOS scripts and assets](https://github.com/Innygr/InntegerOS/actions/workflows/validate.yml/badge.svg)](https://github.com/Innygr/InntegerOS/actions/workflows/validate.yml)
+
 ## Long-term product direction
 
 InntegerOS is being developed toward an independent Linux distribution with one shared system foundation and multiple desktop experiences: Plasma (flagship), GNOME (alternative), and Xfce (lightweight alternative). **InntegerOS: Complete Edition** is the long-term vision for the fully integrated ecosystem, eventually including an InntegerOS-designed desktop environment. These are architectural goals, not features available in the current desktop edition. See [Desktop Editions](docs/DESKTOP-EDITIONS.md) and the [ISO roadmap](docs/ISO-ROADMAP.md).
