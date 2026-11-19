@@ -32,13 +32,14 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${pac
 
 # Install first-party applications in a system location. Keeping the complete
 # source tree in /opt lets the Control Center find its helper scripts reliably.
-install -d -m 0755 /usr/share/icons/hicolor/scalable/apps /usr/share/applications /usr/local/bin
+install -d -m 0755 /usr/share/icons/hicolor/scalable/apps /usr/share/applications /usr/local/bin /usr/local/lib
 install -m 0644 "$ROOT/branding/logo/inntegeros-icon.svg" /usr/share/icons/hicolor/scalable/apps/inntegeros.svg
 cat > /usr/local/bin/integeros-control-center <<'EOF'
 #!/bin/sh
 exec /usr/bin/python3 /opt/InntegerOS/apps/control-center/integeros-control-center "$@"
 EOF
 chmod 0755 /usr/local/bin/integeros-control-center
+ln -sfn "$ROOT/apps/blacklight-control/blacklight-control" /usr/local/bin/blacklight-control
 install -m 0755 "$ROOT/apps/blacklight-suite/blacklight-desktop-suite" /usr/local/bin/blacklight-desktop-suite
 install -m 0644 "$ROOT/apps/integeros-wallpaper-studio.py" /usr/local/lib/integeros-wallpaper-studio.py
 
