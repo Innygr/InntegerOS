@@ -33,7 +33,7 @@ case "${1:-}" in
   *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
 esac
 
-for tool in "${PYTHON}" curl sha256sum xorriso unsquashfs mksquashfs rsync find flock; do
+for tool in "${PYTHON}" curl sha256sum xorriso unsquashfs mksquashfs rsync find flock sudo; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "Missing build dependency: $tool" >&2
     exit 1
@@ -92,7 +92,7 @@ grep -q "El Torito" "${WORK_DIR}/source-boot-catalog.txt" || {
 }
 
 echo "Extracting source ISO filesystem..."
-rm -rf "${WORK_DIR}/iso-root" "${WORK_DIR}/live-root" "${WORK_DIR}/rebuilt-filesystem.squashfs"
+sudo rm -rf "${WORK_DIR}/iso-root" "${WORK_DIR}/live-root" "${WORK_DIR}/rebuilt-filesystem.squashfs"
 mkdir -p "${WORK_DIR}/iso-root"
 xorriso -osirrox on -indev "$SOURCE_ISO" -extract / "${WORK_DIR}/iso-root" >/dev/null
 
@@ -106,11 +106,11 @@ SQUASHFS_PATH="${squashfs_images[0]}"
 ISO_SQUASHFS_PATH="/${SQUASHFS_PATH#"${WORK_DIR}/iso-root/"}"
 
 echo "Unpacking live filesystem: ${ISO_SQUASHFS_PATH}"
-unsquashfs -no-progress -d "${WORK_DIR}/live-root" "$SQUASHFS_PATH"
+sudo unsquashfs -no-progress -d "${WORK_DIR}/live-root" "$SQUASHFS_PATH"
 
 echo "Embedding InntegerOS repository payload..."
-mkdir -p "${WORK_DIR}/live-root/opt/InntegerOS"
-rsync -a --delete \
+sudo mkdir -p "${WORK_DIR}/live-root/opt/InntegerOS"
+sudo rsync -a --delete \
   --exclude='.git/' \
   --exclude='iso/build/' \
   --exclude='.github/' \
@@ -120,8 +120,8 @@ rsync -a --delete \
 
 VERSION="$(head -n 1 "${ROOT_DIR}/VERSION")"
 COMMIT="$(git -C "$ROOT_DIR" rev-parse HEAD 2>/dev/null || printf 'unknown')"
-mkdir -p "${WORK_DIR}/live-root/etc"
-cat > "${WORK_DIR}/live-root/etc/integeros-release" <<EOF
+sudo mkdir -p "${WORK_DIR}/live-root/etc"
+sudo tee "${WORK_DIR}/live-root/etc/integeros-release" >/dev/null <<EOF
 NAME="InntegerOS"
 PRETTY_NAME="InntegerOS ${VERSION} Plasma Edition (development image)"
 VERSION="${VERSION}"
@@ -131,10 +131,10 @@ ID_LIKE="ubuntu"
 BUILD_COMMIT="${COMMIT}"
 BASE_IMAGE="Kubuntu 26.04.1"
 EOF
-chmod 0644 "${WORK_DIR}/live-root/etc/integeros-release"
+sudo chmod 0644 "${WORK_DIR}/live-root/etc/integeros-release"
 
 echo "Rebuilding live SquashFS..."
-mksquashfs "${WORK_DIR}/live-root" "${WORK_DIR}/rebuilt-filesystem.squashfs" \
+sudo mksquashfs "${WORK_DIR}/live-root" "${WORK_DIR}/rebuilt-filesystem.squashfs" \
   -noappend -comp xz -b 1M -no-progress
 
 OUTPUT_ISO="${OUTPUT_DIR}/InntegerOS-${VERSION}-Plasma-amd64.iso"
