@@ -38,17 +38,24 @@ if [[ -d /etc/apt/sources.list.d ]]; then
         sed -i -E '/^[[:space:]]*deb(-src)?[[:space:]]+cdrom:/Is/^/# disabled for offline ISO remaster: /' "$source_file"
         ;;
       *.sources)
-        # Deb822 CD-ROM stanzas are disabled as a whole.
-        awk '
-          BEGIN { RS=""; ORS="\\n\\n" }
-          tolower($0) ~ /(^|\\n)uris:[[:space:]]*cdrom:/ { next }
-          { print }
-        ' "$source_file" > "${source_file}.tmp"
-        cat "${source_file}.tmp" > "$source_file"
-        rm -f "${source_file}.tmp"
+        python3 - "$source_file" <<'PY'
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+stanzas = path.read_text(encoding="utf-8").strip().split("\\n\\n")
+kept = [
+    stanza for stanza in stanzas
+    if not any(
+        line.strip().lower().startswith("uris:") and "cdrom:" in line.lower()
+        for line in stanza.splitlines()
+    )
+]
+path.write_text("\\n\\n".join(kept) + ("\\n" if kept else ""), encoding="utf-8")
+PY
         ;;
     esac
-  done < <(find /etc/apt/sources.list.d -maxdepth 1 -type f \\( -name '*.list' -o -name '*.sources' \\) -print0)
+  done < <(find /etc/apt/sources.list.d -maxdepth 1 -type f -print0)
 fi
 
 echo "Refreshing Kubuntu package indexes..."
