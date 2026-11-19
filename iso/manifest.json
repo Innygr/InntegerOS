@@ -17,8 +17,8 @@
   "version_source": "../VERSION",
   "build": {
     "tool": "kubuntu-iso-remaster",
-    "configuration": null,
-    "status": "not_started"
+    "configuration": "scripts/provision-live-image.sh",
+    "status": "provisioning_implemented_build_pending"
   },
   "installer": {
     "backend": "inherit-kubuntu-live-installer",
