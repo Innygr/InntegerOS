@@ -36,7 +36,7 @@ assert data.get("base", {}).get("release") == "26.04.1", "Unexpected Kubuntu bas
 assert data.get("base", {}).get("status") == "selected", "Kubuntu base selection must be explicit"
 assert data.get("base", {}).get("source_iso") == "kubuntu-26.04.1-desktop-amd64.iso"
 assert re.fullmatch(r"[0-9a-f]{64}", data.get("base", {}).get("source_sha256", "")), "Source ISO SHA-256 is required"
-assert data.get("build", {}).get("status") == "not_started", "Build status must be explicit"
+assert data.get("build", {}).get("status") == "provisioning_implemented_build_pending", "Live-image provisioning status must be explicit"
 assert data.get("installer", {}).get("backend") == "inherit-kubuntu-live-installer", "Installer must inherit the Kubuntu live installer"
 assert data.get("installer", {}).get("status") == "pending_validation", "Inherited installer must remain unvalidated until VM tests pass"
 assert data.get("installer", {}).get("destructive_actions_require_confirmation") is True
@@ -74,12 +74,17 @@ plasma = (root / "iso/manifests/profiles/plasma/packages.txt").read_text(encodin
 assert re.search(r"^network-manager$", base, re.M), "Shared base must include NetworkManager"
 assert re.search(r"^plasma-desktop$", plasma, re.M), "Plasma profile must include plasma-desktop"
 assert data["build"]["tool"] == "kubuntu-iso-remaster", "Build strategy must remain Kubuntu ISO remastering"
-assert data["build"]["configuration"] is None, "Do not claim a build configuration exists before it is committed"
+assert data["build"]["configuration"] == "scripts/provision-live-image.sh", "Committed live-image provisioning script must be recorded"
+provisioner = root / data["build"]["configuration"]
+assert provisioner.is_file(), "Live-image provisioning script is missing"
+provision_text = provisioner.read_text(encoding="utf-8")
+for launcher in ("integeros-control-center.desktop", "blacklight-desktop-suite.desktop", "integeros-wallpaper-studio.desktop"):
+    assert launcher in provision_text, f"Missing first-party application launcher: {launcher}"
 
 print(f"OK  InntegerOS {version} ISO metadata")
 print(f"OK  {all_count} package entries across {len(data['package_manifests'])} manifests")
-print("INFO Kubuntu remaster strategy is selected; executable build configuration is still pending.")
-print("INFO Installer inheritance is planned but not validated; no ISO was built.")
+print("INFO Kubuntu remaster strategy and InntegerOS live-image provisioning are committed.")
+print("INFO Installer inheritance is planned but not validated; boot and installer VM tests are still required.")
 PY
 
 echo "ISO preflight passed. This checks repository structure only, not package availability or bootability."
