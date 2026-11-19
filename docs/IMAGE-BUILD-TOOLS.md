@@ -1,84 +1,65 @@
-# InntegerOS Image-Build Tool Evaluation
+# InntegerOS Image-Build Approach
 
-**Status:** preliminary research; no build tool selected  
-**Target:** first reproducible x86_64 Plasma live-image proof of concept  
-**Base:** Ubuntu 26.04 (Resolute) remains a candidate, not a final decision
+**Decision:** use the official Kubuntu 26.04.1 LTS desktop ISO as the source image for InntegerOS 1.0.  
+**Implementation status:** remastering toolchain not yet selected; no InntegerOS ISO has been built.
 
-## Evaluation requirements
+## Why this approach
 
-The first build system must support:
-- repository-controlled, repeatable configuration;
-- package installation and removal from Ubuntu-compatible repositories;
-- a bootable UEFI live image, with legacy BIOS considered where practical;
-- a live desktop that can run without writing to internal disks;
-- integration with an installer backend that can be branded and safely configured;
-- package manifests, reproducible logs, checksums, and VM testing;
-- a maintainable path to later GNOME and Xfce edition profiles.
+The current InntegerOS desktop is developed on Kubuntu and depends heavily on KDE Plasma and the Ubuntu/Kubuntu package ecosystem. Rebuilding the entire live system from a generic Ubuntu root filesystem would add unnecessary work and risk for the 1.0 deadline.
 
-A tool that only creates a root filesystem or disk image is not automatically a complete live-ISO and installer solution.
+Instead, start with the Kubuntu desktop ISO and add the InntegerOS layer. The project should preserve the upstream live environment, kernel and initramfs, bootloader configuration, hardware support, and graphical installer wherever practical. InntegerOS supplies its own product identity, defaults, first-party applications, Control Center, feature policy, and release metadata.
 
-## Candidates
+The selected source image is:
 
-### A. Ubuntu image pipeline: `livecd-rootfs` + Ubuntu image tooling
+- Release: Kubuntu 26.04.1 LTS (Resolute Raccoon)
+- Architecture: amd64
+- Filename: `kubuntu-26.04.1-desktop-amd64.iso`
+- Official directory: https://cdimages.ubuntu.com/kubuntu/releases/26.04.1/release/
+- Published SHA-256: `831e4d4bb85098339ba43d3502cd6619b27e76daf37246a084cd68a6413090b8`
 
-**What it is:** Canonical documents `livecd-rootfs` as the tool used to create Ubuntu installer and preinstalled images. The documented build interface uses its live-build auto scripts and project/suite variables. Ubuntu's wider publication pipeline also uses `ubuntu-cdimage` and Launchpad build infrastructure.
+Always download the checksum file from the same official release directory and verify the source image before modifying it.
 
-**Strengths**
-- Closest alignment with the Ubuntu 26.04 candidate base.
-- Uses Ubuntu's own image-generation components and conventions.
-- Provides a credible route to understanding Ubuntu live and installer image composition.
+## Required remaster capabilities
 
-**Risks / questions**
-- Some workflows are designed around Canonical's own project configuration and infrastructure.
-- We must prove that an independent InntegerOS project can maintain its own configuration without relying on inaccessible Canonical build services.
-- Installer integration, desktop selection, branding, and package ownership still need separate design and testing.
+The selected toolchain must:
 
-**Assessment:** first candidate for a small technical spike because Ubuntu is the current base candidate. Do not assume it is independently maintainable until the spike proves that.
+1. Extract and modify the Kubuntu live filesystem without losing required filesystem metadata.
+2. Install packages from the selected Kubuntu/Ubuntu repositories using repository-controlled manifests.
+3. Apply InntegerOS system identity, desktop defaults, first-party apps, branding, and experimental-feature defaults.
+4. Preserve the source ISO's UEFI boot support and hybrid-media behaviour.
+5. Preserve the existing Kubuntu live-session and installer launch path unless a separately tested change is required.
+6. Rebuild a bootable ISO and verify its boot catalog, filesystem layout, and checksum.
+7. Capture exact package versions, source ISO hash, source commit, tool versions, logs, and final artifact hash.
 
-### B. Debian `live-build`
+A successful root-filesystem build alone does not prove that the ISO boots or that its installer still works.
 
-**What it is:** a configurable toolkit for assembling live systems from package archives and configuration directories. Ubuntu's documented image pipeline also uses live-build to create root filesystems.
+## Toolchain evaluation
 
-**Strengths**
-- Configuration-driven and suitable for keeping package lists and hooks in version control.
-- Designed around live-system construction rather than only producing a generic disk image.
-- Could provide a more project-owned workflow if the Ubuntu-specific components can be integrated cleanly.
+The proof of concept should compare only approaches that can modify and rebuild the existing Kubuntu desktop ISO:
 
-**Risks / questions**
-- Ubuntu-specific boot, installer, kernel, initramfs, and desktop integration must be validated rather than assumed.
-- A successful Debian live-build configuration is not proof that an Ubuntu 26.04 live image will boot or install correctly.
-- We need a minimal prototype before committing to it.
+- **ISO remaster with filesystem extraction/reassembly:** likely the most direct route, but must preserve boot catalog, EFI images, file permissions, symlinks, hard links, and hybrid boot metadata.
+- **live-build with Kubuntu-specific integration:** a possible controlled rebuild route, but only if it can consume the selected Kubuntu package set and reproduce the same live desktop and installer behaviour.
+- **Ubuntu live-image tooling:** useful reference material for understanding Ubuntu live filesystems and hooks; do not assume Canonical's full image publication pipeline is available to this project.
 
-**Assessment:** strong comparison candidate and possible fallback if the Ubuntu pipeline is too coupled to Canonical's release infrastructure.
+Do not select a tool based on popularity or a successful generic Linux ISO. Run a minimal prototype against the exact Kubuntu 26.04.1 source image.
 
-### C. `mkosi`
+## Installer policy
 
-**What it is:** a systemd project for building customized OS disk images. Its documentation describes package-manager integration including APT and supports Ubuntu as a distribution target.
+The 1.0 target is to retain the installer provided by the Kubuntu source image rather than introduce a new installer backend. First identify the actual installer components and launch configuration in the downloaded source image. After remastering, verify that the live desktop still launches the installer and that the installer identifies the InntegerOS target correctly where practical.
 
-**Strengths**
-- Declarative configuration and useful image-building/development workflows.
-- Ubuntu package support.
-- Useful for experimenting with root filesystems, disk images, and later system-image development.
+The installer must clearly identify the target disk and require explicit final confirmation before destructive changes. Test clean-disk installation only in disposable VMs. Test alongside installation only in a disposable VM containing a second OS. If the inherited installer cannot safely meet a requirement, disable that option rather than claiming it works.
 
-**Risks / questions**
-- A disk image is not the same thing as a polished hybrid live ISO with a desktop session and safe graphical installer.
-- Live-session persistence, boot-media layout, and installer integration would need additional work.
-- It may be better suited to component images or future development/testing than the first desktop installer ISO.
+## Acceptance gates
 
-**Assessment:** useful supporting tool, but not the leading candidate for the first live desktop ISO unless a prototype demonstrates the missing live-media workflow.
+- Source ISO checksum verified against the official checksum file.
+- Source package inventory and boot/installer structure recorded.
+- Remaster configuration stored in this repository.
+- Build succeeds from a clean checkout and records all inputs.
+- Result boots in a disposable UEFI VM into a usable InntegerOS Plasma live session.
+- Live session works offline for basic desktop use and does not alter disks by itself.
+- Control Center opens; stable features work; experimental features are disabled by default and visibly labelled.
+- Inherited installer still launches and passes clean-disk installation tests in a disposable VM.
+- Installed system boots and identifies itself as InntegerOS.
+- Final tested ISO hash matches the published artifact hash.
 
-## Preliminary recommendation
-
-1. Prototype the Ubuntu `livecd-rootfs` route first against the Ubuntu 26.04 candidate.
-2. In parallel, document the smallest `live-build` configuration needed to create the same package/rootfs target.
-3. Use `mkosi` as a comparison for rootfs and disk-image development, not as an assumed complete live-ISO solution.
-4. Choose only after the same acceptance checks are run: repeatability, UEFI boot in a disposable VM, live Plasma session, offline usability, package manifest capture, and a clear path to an InntegerOS-owned installer experience.
-
-No tool has been selected, no packages have been installed on the user's laptop, and no ISO has been built by this evaluation.
-
-## Sources
-
-- [Ubuntu image builds](https://ubuntu.com/project/docs/how-ubuntu-is-made/processes/image-builds/)
-- [Ubuntu create installer image](https://ubuntu.com/hardware/docs/image-cookbook/howto/images/create_installer_image/)
-- [Ubuntu live CD customization guide](https://wiki.ubuntu.com/Live_CD_customization)
-- [mkosi documentation](https://mkosi.systemd.io/)
+No builder has yet passed these gates. The manifest deliberately records the method as selected while the implementation remains `not_started`.
