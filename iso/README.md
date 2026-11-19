@@ -1,6 +1,6 @@
 # InntegerOS ISO Build Area
 
-**Status:** scaffold only — no build configuration or build script yet.
+**Status:** preparation scaffold — package manifests and metadata exist; no image builder or build script has been selected.
 
 This directory will hold repository-controlled image configuration for the first InntegerOS live-image prototype.
 
@@ -14,11 +14,14 @@ This directory will hold repository-controlled image configuration for the first
 
 ## Planned layout
 
+- `manifest.json` — machine-readable image identity and build/installer state
 - `manifests/` — explicit base and edition package lists
 - `profiles/` — desktop-specific package and configuration profiles
 - `hooks/` — narrowly scoped image customizations
 - `config/` — boot, live-session, and image metadata
 - `build/` — generated output only; never commit large generated ISOs
+- `../scripts/iso-preflight.sh` — read-only structural validation
+- `../tests/iso-manifest-smoke.py` — CI validation
 
 ## Build safety
 
@@ -31,4 +34,4 @@ This directory will hold repository-controlled image configuration for the first
 
 ## Current gate
 
-The next task is a minimal reproducible rootfs/live-image experiment. See [Image-Build Tool Evaluation](../docs/IMAGE-BUILD-TOOLS.md) and [ISO Roadmap](../docs/ISO-ROADMAP.md).
+The current next task is to select a build method through a small disposable-environment proof of concept. Run `bash scripts/iso-preflight.sh` and `python3 tests/iso-manifest-smoke.py` from the repository root to validate the current scaffold. These checks do not build an image. See [Image-Build Tool Evaluation](../docs/IMAGE-BUILD-TOOLS.md) and [ISO Roadmap](../docs/ISO-ROADMAP.md).
