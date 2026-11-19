@@ -1,6 +1,6 @@
 # InntegerOS ISO Build Area
 
-**Status:** Kubuntu base selected; remaster build implementation and VM validation are still pending.
+**Status:** First-pass remaster builder and post-validation GitHub Actions workflow are committed. The builder has not yet completed a real build; boot and installer VM validation remain pending.
 
 ## First release target
 
@@ -51,4 +51,4 @@ Stable features form the default experience. Experimental features may be shippe
 
 ## Current gate
 
-The next deliverable is a minimal remaster prototype based on the selected Kubuntu ISO. Run `bash scripts/iso-preflight.sh`, `python3 tests/iso-manifest-smoke.py`, and `bash scripts/verify-kubuntu-source.sh --metadata-only` from the repository root to validate metadata and the official source checksum entry. Pass the local ISO path to the verifier to validate the actual image bytes. These checks do not build an image. See [Image-Build Tool Evaluation](../docs/IMAGE-BUILD-TOOLS.md) and [ISO Roadmap](../docs/ISO-ROADMAP.md).
+The first-pass builder is `../scripts/build-kubuntu-iso.sh`. The separate `Build InntegerOS ISO` workflow is triggered only when the `Validate InnyGrOS scripts and assets` workflow succeeds on `main`; it checks out that exact validated commit and uploads the ISO plus checksum. The current builder embeds the repository payload in the live filesystem and preserves the source El Torito boot configuration. It intentionally does not install the proposal-only package manifests. A completed workflow artifact is still only a development prototype until UEFI live boot and installation pass in disposable VMs. See [Image-Build Tool Evaluation](../docs/IMAGE-BUILD-TOOLS.md) and [ISO Roadmap](../docs/ISO-ROADMAP.md).
