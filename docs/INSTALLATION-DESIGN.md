@@ -42,7 +42,7 @@ See [Desktop Editions](DESKTOP-EDITIONS.md) for the full edition architecture, C
 
 ## 4. Base system strategy
 
-For the first installable prototype, use Ubuntu package infrastructure as a possible foundation while creating an InntegerOS-controlled image and integration layer. Kubuntu 26.04.1 is a candidate reference environment because the current desktop project is developed on it; it is not a final product-identity decision and must not be assumed to be the permanent base.
+For InntegerOS 1.0, use the official **Kubuntu 26.04.1 LTS desktop ISO** as the source image and remaster it with an InntegerOS-controlled integration layer. Preserve Kubuntu's existing live desktop, boot infrastructure, hardware support, and installer wherever practical. This is an explicit 1.0 engineering-base decision, not a claim that InntegerOS is an official Kubuntu release. Later InntegerOS releases may revise the base through a documented compatibility and upgrade decision.
 
 Before selecting and freezing the base, compare supported Ubuntu/Kubuntu routes and image-building methods. Record:
 - exact release, ISO filename, architecture, date, and SHA-256;
