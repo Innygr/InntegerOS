@@ -1,6 +1,6 @@
 # InntegerOS ISO Build Area
 
-**Status:** First-pass remaster builder and post-validation GitHub Actions workflow are committed. The builder has not yet completed a real build; boot and installer VM validation remain pending.
+**Status:** The builder now provisions first-party InntegerOS applications and required packages into the Kubuntu live filesystem. A successful build and VM validation are still pending.
 
 ## First release target
 
@@ -24,7 +24,7 @@ Official source directory: https://cdimages.ubuntu.com/kubuntu/releases/26.04.1/
 5. Rebuild a bootable hybrid ISO and record the exact source ISO hash, repository commit, package inventory, build log, and output hash.
 6. Test the resulting artifact in disposable UEFI VMs before publishing it.
 
-The exact remastering toolchain is not yet selected. A prototype must demonstrate that it can preserve Kubuntu's boot and installer behaviour; merely extracting and recompressing a filesystem is not sufficient. The source checksum gate is implemented in `../scripts/verify-kubuntu-source.sh`; it checks the manifest against the official release `SHA256SUMS`, then verifies a local ISO when its path is supplied.
+The first remaster prototype uses xorriso and SquashFS while replaying Kubuntu boot metadata. It must still demonstrate that the rebuilt image preserves Kubuntu boot and installer behaviour; structural checks alone are not sufficient. The source checksum gate is implemented in `../scripts/verify-kubuntu-source.sh`; it checks the manifest against the official release `SHA256SUMS`, then verifies a local ISO when its path is supplied.
 
 ## Planned layout
 
@@ -52,4 +52,4 @@ Stable features form the default experience. Experimental features may be shippe
 
 ## Current gate
 
-The first-pass builder is `../scripts/build-kubuntu-iso.sh`. The separate `Build InntegerOS ISO` workflow is triggered only when the `Validate InnyGrOS scripts and assets` workflow succeeds on `main`; it checks out that exact validated commit and writes a completed ISO to `../dist/` and uploads it only after checksum verification and El Torito boot-catalog checks pass. The local success path is `dist/InntegerOS-<version>-Plasma-amd64.iso`; its checksum is the adjacent `.sha256` file. The current builder embeds the repository payload in the live filesystem and preserves the source El Torito boot configuration. It intentionally does not install the proposal-only package manifests. A completed workflow artifact is still only a development prototype until UEFI live boot and installation pass in disposable VMs. See [Image-Build Tool Evaluation](../docs/IMAGE-BUILD-TOOLS.md) and [ISO Roadmap](../docs/ISO-ROADMAP.md).
+The first-pass builder is `../scripts/build-kubuntu-iso.sh`. The separate `Build InntegerOS ISO` workflow is triggered only when the `Validate InnyGrOS scripts and assets` workflow succeeds on `main`; it checks out that exact validated commit and writes a completed ISO to `../dist/` and uploads it only after checksum verification and El Torito boot-catalog checks pass. The local success path is `dist/InntegerOS-<version>-Plasma-amd64.iso`; its checksum is the adjacent `.sha256` file. The builder now installs the shared and Plasma package manifests inside the Kubuntu live filesystem, then installs the InntegerOS Control Center, Blacklight Desktop Suite, Wallpaper Studio, launchers, and required runtime dependencies. Development, creative, and gaming bundles remain opt-in and are not installed by default. The repository payload remains available under `/opt/InntegerOS` so the Control Center can launch its helper tools. A completed workflow artifact is still only a development prototype until UEFI live boot and installation pass in disposable VMs. See [Image-Build Tool Evaluation](../docs/IMAGE-BUILD-TOOLS.md) and [ISO Roadmap](../docs/ISO-ROADMAP.md).
