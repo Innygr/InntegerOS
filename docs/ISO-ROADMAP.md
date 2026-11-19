@@ -46,11 +46,11 @@ See [Desktop Editions](DESKTOP-EDITIONS.md) for the detailed architecture and su
 - Do not test installation on the user's daily-use dual-boot laptop until the image has passed VM testing and a separate backup/recovery plan is confirmed.
 - If installation testing is not complete by the end of November, December's deliverable can be a live-image preview rather than an unsafe or untested installer.
 
-## Current status — November 18, 2026
+## Current status — November 19, 2026
 
-**Stage: Kubuntu base selected; remaster implementation not started.** The source is the official Kubuntu 26.04.1 LTS desktop ISO. The project intends to preserve its live session and installer while adding the InntegerOS system layer. The manifest, preflight, and CI smoke test now record and validate this direction. No remaster script exists yet, and no InntegerOS ISO has been produced or boot-tested.
+**Stage: source-image metadata verification implemented; remaster build still pending.** The official Kubuntu 26.04.1 LTS ISO and its SHA-256 are recorded in the manifest. `scripts/verify-kubuntu-source.sh` now checks the manifest against the official release's `SHA256SUMS` and, when given the ISO file, verifies the local image bytes too. An offline fixture test is included in CI. The repository still has no ISO remaster builder, and no InntegerOS ISO has been produced or boot-tested.
 
-The next concrete deliverable is a disposable-environment prototype that remasters the selected Kubuntu ISO. It must preserve the upstream boot and installer path, resolve the package candidates against the matching repositories, and produce a bootable InntegerOS live image.
+The next concrete deliverable is a repeatable disposable-environment remaster proof of concept. Before selecting extraction/rebuild commands, inspect the actual source image's boot catalog, filesystem layout, live filesystem, and installer launch path. Preserve those upstream paths, resolve package candidates against the matching repositories, and produce a bootable InntegerOS live image.
 
 ## Installation architecture
 
