@@ -87,7 +87,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          bash -n ./scripts/iso-preflight.sh ./scripts/verify-kubuntu-source.sh ./tests/verify-kubuntu-source-fixture.sh
+          bash -n ./scripts/iso-preflight.sh
+          bash -n ./scripts/verify-kubuntu-source.sh
+          bash -n ./tests/verify-kubuntu-source-fixture.sh
           bash ./scripts/iso-preflight.sh
           python3 ./tests/iso-manifest-smoke.py
           bash ./tests/verify-kubuntu-source-fixture.sh
