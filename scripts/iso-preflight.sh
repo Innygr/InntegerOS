@@ -62,6 +62,13 @@ for relative in data.get("package_manifests", []):
     all_count += len(packages)
     print(f"OK  {path.relative_to(root)} ({len(packages)} candidates)")
 
+features = json.loads((root / "config/features.json").read_text(encoding="utf-8"))
+assert features.get("default_experimental_enabled") is False, "Experimental features must be disabled by default"
+assert features.get("ui_badge") == "EXPERIMENTAL", "Experimental features need a visible badge"
+for feature in features.get("features", []):
+    assert feature.get("status") == "experimental", f"Unexpected feature status: {feature.get('id')}"
+    assert feature.get("default_enabled") is False, f"Experimental feature must default off: {feature.get('id')}"
+
 base = (root / "iso/manifests/base/common.txt").read_text(encoding="utf-8")
 plasma = (root / "iso/manifests/profiles/plasma/packages.txt").read_text(encoding="utf-8")
 assert re.search(r"^network-manager$", base, re.M), "Shared base must include NetworkManager"
