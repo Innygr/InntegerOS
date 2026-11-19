@@ -33,6 +33,16 @@ class IsoManifestTests(unittest.TestCase):
         self.assertEqual(self.manifest["installer"]["status"], "pending_validation")
         self.assertTrue(self.manifest["installer"]["destructive_actions_require_confirmation"])
 
+    def test_experimental_features_default_off_and_are_labelled(self):
+        features = json.loads((ROOT / "config/features.json").read_text(encoding="utf-8"))
+        self.assertFalse(features["default_experimental_enabled"])
+        self.assertEqual(features["ui_badge"], "EXPERIMENTAL")
+        self.assertTrue(features["enablement_requires_explicit_user_action"])
+        self.assertGreater(len(features["features"]), 0)
+        for feature in features["features"]:
+            self.assertEqual(feature["status"], "experimental")
+            self.assertFalse(feature["default_enabled"])
+
     def test_version_is_valid(self):
         version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
         self.assertRegex(version, r"^\d+\.\d+(?:\.\d+)?$")
