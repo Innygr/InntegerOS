@@ -1,7 +1,7 @@
 # InntegerOS ISO Roadmap
 
-**Target:** a tested bootable InntegerOS image and installation path during December 2026–January 2027.  
-**Relationship to 1.0:** the November 14 desktop edition remains a separate milestone. The installable distribution is a larger deliverable and will not be called release-ready until it passes the checks below.
+**Target:** InntegerOS 1.0 with a tested, bootable, installable Kubuntu-based ISO by **November 27, 2026** (early November 28 is the contingency window).  
+**Release rule:** the ISO is a 1.0 deliverable, not a later milestone. It must pass the live-session and installation gates below.
 
 ## Product direction
 
@@ -17,14 +17,14 @@ The first installable prototype focuses on **Plasma Edition**, the current devel
 
 See [Desktop Editions](DESKTOP-EDITIONS.md) for the detailed architecture and support gates.
 
-The base release, image-building method, and installer engine must be evaluated and documented before the first image is frozen. Kubuntu 26.04.1 is a useful Plasma reference environment and possible technical starting point, not a permanently decided product base.
+**Base decision for 1.0:** use the official Kubuntu 26.04.1 LTS desktop ISO as the source image. Remaster it with the InntegerOS integration layer and preserve Kubuntu’s existing live-session, boot, and installer infrastructure wherever practical. The remaster toolchain still needs a working proof of concept.
 
 ## Milestones
 
-- **Nov 15–21 — architecture and image proof of concept:** define which parts InntegerOS owns, compare supported bases and build tooling, document package/licensing requirements, and produce a minimal repeatable Plasma live-image build.
-- **Nov 22–26 — InntegerOS live session:** boot the image in a VM; test the Plasma edition's identity, networking, display scaling, audio, first-run flow, and offline usability.
-- **Nov 27–30 — installation gate:** evaluate a proven installer backend and integrate an InntegerOS-branded workflow. Test clean-disk and manual installation in disposable VMs. Test alongside installation only when it can be safely validated. Otherwise, keep the image as a non-installing preview.
-- **December–January — hardware and release testing:** test on spare hardware, then assess the ThinkPad T580 without touching its existing Windows/Kubuntu installation. Verify checksums, update/recovery behaviour, documentation, and known limitations.
+- **Nov 18–20 — source-image and remaster proof of concept:** verify the official Kubuntu ISO checksum, inspect its boot/live/installer layout, choose a remastering method, and produce a minimal repeatable image.
+- **Nov 21–23 — InntegerOS live session:** boot the remastered image in a disposable VM; test identity, networking, display scaling, audio, Control Center, stable features, experimental defaults, and offline usability.
+- **Nov 24–25 — installation gate:** verify the inherited Kubuntu installer still launches and identifies the InntegerOS image correctly; test clean-disk installation and first boot in disposable VMs. Test alongside installation only when safely validated.
+- **Nov 26 — release candidate:** rerun acceptance tests against the exact ISO, capture package inventory/build metadata/logs, generate SHA-256, and complete release notes.
 - **After the shared foundation stabilizes:** add GNOME and Xfce edition profiles and run separate VM compatibility tests for each.
 
 ## Release gates
@@ -41,16 +41,16 @@ The base release, image-building method, and installer engine must be evaluated 
 
 ## Scope boundaries
 
-- The November 14 **1.0 desktop edition** is not dependent on the installable distribution being ready.
+- The **1.0 ISO is required**. Do not publish 1.0 as complete without the tested image.
 - The first prototype should prioritize a reliable Plasma live system and safe installation over a custom partitioning engine or multiple desktop environments.
 - Do not test installation on the user's daily-use dual-boot laptop until the image has passed VM testing and a separate backup/recovery plan is confirmed.
 - If installation testing is not complete by the end of November, December's deliverable can be a live-image preview rather than an unsafe or untested installer.
 
 ## Current status — November 18, 2026
 
-**Stage: ISO project preparation; no image build proof-of-concept yet.** The repository now contains shared and Plasma package-candidate manifests, opt-in development/creative/gaming bundles, a VM acceptance checklist, build-metadata requirements, and a machine-readable `iso/manifest.json`. A read-only preflight and CI smoke test validate the structure. These are preparation assets only: no image builder or installer backend has been selected, no builder-specific configuration or image-generation script exists, and no ISO has been produced or boot-tested.
+**Stage: Kubuntu base selected; remaster implementation not started.** The source is the official Kubuntu 26.04.1 LTS desktop ISO. The project intends to preserve its live session and installer while adding the InntegerOS system layer. The manifest, preflight, and CI smoke test now record and validate this direction. No remaster script exists yet, and no InntegerOS ISO has been produced or boot-tested.
 
-The next concrete deliverable is a disposable-environment tooling spike that compares the Ubuntu image pipeline with `live-build`, resolves the package candidates against the selected Ubuntu repositories, and produces the smallest repeatable Plasma live-image prototype. Only after that image exists can live-session and installer testing begin.
+The next concrete deliverable is a disposable-environment prototype that remasters the selected Kubuntu ISO. It must preserve the upstream boot and installer path, resolve the package candidates against the matching repositories, and produce a bootable InntegerOS live image.
 
 ## Installation architecture
 
