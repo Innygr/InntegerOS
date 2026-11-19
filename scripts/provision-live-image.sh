@@ -25,6 +25,32 @@ mapfile -t packages < <(
   } | sort -u
 )
 
+# A live ISO often carries a file:/cdrom APT entry. The extracted build
+# chroot has no mounted installation medium, so disable only CD-ROM entries;
+# retain the official network repositories from the Kubuntu image.
+if [[ -f /etc/apt/sources.list ]]; then
+  sed -i -E '/^[[:space:]]*deb(-src)?[[:space:]]+cdrom:/Is/^/# disabled for offline ISO remaster: /' /etc/apt/sources.list
+fi
+if [[ -d /etc/apt/sources.list.d ]]; then
+  while IFS= read -r -d '' source_file; do
+    case "$source_file" in
+      *.list)
+        sed -i -E '/^[[:space:]]*deb(-src)?[[:space:]]+cdrom:/Is/^/# disabled for offline ISO remaster: /' "$source_file"
+        ;;
+      *.sources)
+        # Deb822 CD-ROM stanzas are disabled as a whole.
+        awk '
+          BEGIN { RS=""; ORS="\\n\\n" }
+          tolower($0) ~ /(^|\\n)uris:[[:space:]]*cdrom:/ { next }
+          { print }
+        ' "$source_file" > "${source_file}.tmp"
+        cat "${source_file}.tmp" > "$source_file"
+        rm -f "${source_file}.tmp"
+        ;;
+    esac
+  done < <(find /etc/apt/sources.list.d -maxdepth 1 -type f \\( -name '*.list' -o -name '*.sources' \\) -print0)
+fi
+
 echo "Refreshing Kubuntu package indexes..."
 apt-get update
 echo "Installing InntegerOS Plasma and first-party application dependencies..."
