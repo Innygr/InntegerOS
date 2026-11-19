@@ -78,7 +78,8 @@ assert data["build"]["configuration"] is None, "Do not claim a build configurati
 
 print(f"OK  InntegerOS {version} ISO metadata")
 print(f"OK  {all_count} package entries across {len(data['package_manifests'])} manifests")
-print("INFO Builder and installer remain unselected; no ISO was built.")
+print("INFO Kubuntu remaster strategy is selected; executable build configuration is still pending.")
+print("INFO Installer inheritance is planned but not validated; no ISO was built.")
 PY
 
 echo "ISO preflight passed. This checks repository structure only, not package availability or bootability."
