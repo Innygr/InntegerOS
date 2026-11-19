@@ -43,6 +43,13 @@ class IsoManifestTests(unittest.TestCase):
             self.assertEqual(feature["status"], "experimental")
             self.assertFalse(feature["default_enabled"])
 
+    def test_control_center_labels_experimental_tools(self):
+        app = (ROOT / "apps/control-center/integeros-control-center").read_text(encoding="utf-8")
+        self.assertIn("Deep Space Boot Studio — EXPERIMENTAL", app)
+        self.assertIn("Lockscreen controls — EXPERIMENTAL", app)
+        self.assertIn("def _open_experimental_boot_studio", app)
+        self.assertIn("GRUB customization is disabled by default", app)
+
     def test_version_is_valid(self):
         version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
         self.assertRegex(version, r"^\d+\.\d+(?:\.\d+)?$")
