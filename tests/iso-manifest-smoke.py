@@ -27,8 +27,8 @@ class IsoManifestTests(unittest.TestCase):
         self.assertEqual(base["source_iso"], "kubuntu-26.04.1-desktop-amd64.iso")
         self.assertRegex(base["source_sha256"], r"^[0-9a-f]{64}$")
         self.assertEqual(self.manifest["build"]["tool"], "kubuntu-iso-remaster")
-        self.assertIsNone(self.manifest["build"]["configuration"])
-        self.assertEqual(self.manifest["build"]["status"], "not_started")
+        self.assertEqual(self.manifest["build"]["configuration"], "scripts/provision-live-image.sh")
+        self.assertEqual(self.manifest["build"]["status"], "provisioning_implemented_build_pending")
         self.assertEqual(self.manifest["installer"]["backend"], "inherit-kubuntu-live-installer")
         self.assertEqual(self.manifest["installer"]["status"], "pending_validation")
         self.assertTrue(self.manifest["installer"]["destructive_actions_require_confirmation"])
@@ -68,6 +68,21 @@ class IsoManifestTests(unittest.TestCase):
                 packages.append(line)
             self.assertTrue(packages, f"empty manifest: {relative}")
 
+    def test_live_image_provisions_first_party_apps(self):
+        provisioner = (ROOT / "scripts/provision-live-image.sh").read_text(encoding="utf-8")
+        builder = (ROOT / "scripts/build-kubuntu-iso.sh").read_text(encoding="utf-8")
+        for required in (
+            "iso/manifests/base/common.txt",
+            "iso/manifests/profiles/plasma/packages.txt",
+            "integeros-control-center.desktop",
+            "blacklight-desktop-suite.desktop",
+            "integeros-wallpaper-studio.desktop",
+            "/opt/InntegerOS",
+        ):
+            self.assertIn(required, provisioner)
+        self.assertIn("provision-live-image.sh", builder)
+        self.assertIn("apt-get install", provisioner)
+        self.assertNotIn("iso/manifests/optional/", provisioner)
     def test_core_packages_are_in_their_expected_groups(self):
         base = (ROOT / "iso/manifests/base/common.txt").read_text(encoding="utf-8")
         plasma = (ROOT / "iso/manifests/profiles/plasma/packages.txt").read_text(encoding="utf-8")
