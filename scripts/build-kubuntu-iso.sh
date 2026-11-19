@@ -12,6 +12,16 @@ WORK_DIR="${BUILD_ROOT}/work"
 OUTPUT_DIR="${ISO_OUTPUT_DIR:-${ROOT_DIR}/dist}"
 PYTHON="${PYTHON:-python3}"
 KEEP_WORK="${KEEP_WORK:-0}"
+LIVE_ROOT="${WORK_DIR}/live-root"
+CHROOT_MOUNTS=()
+
+cleanup_chroot() {
+  local mountpoint
+  for mountpoint in "${CHROOT_MOUNTS[@]:-}"; do
+    sudo umount -R "$mountpoint" 2>/dev/null || true
+  done
+}
+trap cleanup_chroot EXIT
 
 usage() {
   cat <<'EOF'
@@ -134,6 +144,38 @@ BUILD_COMMIT="${COMMIT}"
 BASE_IMAGE="Kubuntu 26.04.1"
 EOF
 sudo chmod 0644 "${WORK_DIR}/live-root/etc/integeros-release"
+
+echo "Installing InntegerOS applications and required packages into the live system..."
+for mountpoint in dev proc sys run; do sudo mkdir -p "${LIVE_ROOT}/${mountpoint}"; done
+sudo mount --rbind /dev "${LIVE_ROOT}/dev"
+CHROOT_MOUNTS+=("${LIVE_ROOT}/dev")
+sudo mount -t proc proc "${LIVE_ROOT}/proc"
+CHROOT_MOUNTS+=("${LIVE_ROOT}/proc")
+sudo mount --rbind /sys "${LIVE_ROOT}/sys"
+CHROOT_MOUNTS+=("${LIVE_ROOT}/sys")
+sudo mount --rbind /run "${LIVE_ROOT}/run"
+CHROOT_MOUNTS+=("${LIVE_ROOT}/run")
+
+# Temporarily provide the build runner DNS settings to APT inside the chroot.
+RESOLV_LINK="$(sudo readlink "${LIVE_ROOT}/etc/resolv.conf" 2>/dev/null || true)"
+RESOLV_BACKUP="${WORK_DIR}/resolv.conf.original"
+RESOLV_WAS_LINK=0
+if [[ -L "${LIVE_ROOT}/etc/resolv.conf" ]]; then
+  RESOLV_WAS_LINK=1
+  sudo rm "${LIVE_ROOT}/etc/resolv.conf"
+elif [[ -f "${LIVE_ROOT}/etc/resolv.conf" ]]; then
+  sudo cp -a "${LIVE_ROOT}/etc/resolv.conf" "${RESOLV_BACKUP}"
+fi
+sudo install -m 0644 /etc/resolv.conf "${LIVE_ROOT}/etc/resolv.conf"
+sudo chroot "${LIVE_ROOT}" /bin/bash /opt/InntegerOS/scripts/provision-live-image.sh
+sudo rm -f "${LIVE_ROOT}/etc/resolv.conf"
+if ((RESOLV_WAS_LINK)); then
+  sudo ln -s "${RESOLV_LINK}" "${LIVE_ROOT}/etc/resolv.conf"
+elif [[ -f "${RESOLV_BACKUP}" ]]; then
+  sudo cp -a "${RESOLV_BACKUP}" "${LIVE_ROOT}/etc/resolv.conf"
+fi
+cleanup_chroot
+CHROOT_MOUNTS=()
 
 echo "Rebuilding live SquashFS..."
 sudo mksquashfs "${WORK_DIR}/live-root" "${WORK_DIR}/rebuilt-filesystem.squashfs" \
