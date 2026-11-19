@@ -9,7 +9,7 @@ MANIFEST="${ROOT_DIR}/iso/manifest.json"
 BUILD_ROOT="${BUILD_ROOT:-${ROOT_DIR}/iso/build}"
 SOURCE_DIR="${BUILD_ROOT}/source"
 WORK_DIR="${BUILD_ROOT}/work"
-OUTPUT_DIR="${BUILD_ROOT}/output"
+OUTPUT_DIR="${ISO_OUTPUT_DIR:-${ROOT_DIR}/dist}"
 PYTHON="${PYTHON:-python3}"
 KEEP_WORK="${KEEP_WORK:-0}"
 
@@ -23,7 +23,8 @@ hybrid ISO while replaying the source image's El Torito boot configuration.
 
 Environment:
   KEEP_WORK=1  Keep extracted work files after a successful build.
-  BUILD_ROOT   Override generated build directory (default: iso/build).
+  BUILD_ROOT   Override source and temporary work directory (default: iso/build).
+  ISO_OUTPUT_DIR  Successful ISO destination (default: dist/).
 EOF
 }
 
@@ -138,7 +139,7 @@ sudo mksquashfs "${WORK_DIR}/live-root" "${WORK_DIR}/rebuilt-filesystem.squashfs
   -noappend -comp xz -b 1M -no-progress
 
 OUTPUT_ISO="${OUTPUT_DIR}/InntegerOS-${VERSION}-Plasma-amd64.iso"
-rm -f "$OUTPUT_ISO"
+rm -f "$OUTPUT_ISO" "${OUTPUT_ISO}.sha256" "${OUTPUT_DIR}/BUILD-METADATA.txt" "${OUTPUT_DIR}/boot-catalog.txt"
 echo "Rebuilding ISO and replaying upstream boot configuration..."
 xorriso -indev "$SOURCE_ISO" -outdev "$OUTPUT_ISO" \
   -boot_image any replay \
