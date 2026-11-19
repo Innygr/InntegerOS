@@ -21,14 +21,14 @@ Package lists define image composition and remain separate from desktop profiles
 - optional/creative.txt — opt-in creative applications.
 - optional/gaming.txt — opt-in gaming tools; some packages may require additional repository components.
 
-These lists are deliberately marked as proposals. They have not been resolved against a complete image-builder environment, and they are not yet a frozen package selection.
+The shared base and Plasma package lists are now consumed by the ISO provisioner and are mandatory for the default Plasma image. A successful build must resolve every package name against the Kubuntu repositories; unavailable packages fail the build. The optional development, creative, and gaming bundles remain opt-in and are excluded from the default ISO.
 
 ## Next validation
 
-1. Select the image builder and Ubuntu repository configuration.
-2. Resolve every package name and record its candidate version and origin.
-3. Inspect dependency closure and identify packages pulled in by recommendations.
-4. Build a minimal disposable root filesystem and compare its package inventory with these manifests.
-5. Capture the exact resolved package set in the image build metadata.
+1. Build the image using the Kubuntu live filesystem and its configured Ubuntu repositories.
+2. Resolve every required package; fail closed if any package cannot be installed.
+3. Inspect dependency closure and identify packages pulled in by dependencies.
+4. Capture the installed package inventory in the image build metadata.
+5. Test the live desktop and installer in disposable UEFI VMs.
 
 Optional bundles must never be included in the minimal base image by default.
