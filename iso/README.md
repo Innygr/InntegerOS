@@ -24,7 +24,7 @@ Official source directory: https://cdimages.ubuntu.com/kubuntu/releases/26.04.1/
 5. Rebuild a bootable hybrid ISO and record the exact source ISO hash, repository commit, package inventory, build log, and output hash.
 6. Test the resulting artifact in disposable UEFI VMs before publishing it.
 
-The exact remastering toolchain is not yet selected. A prototype must demonstrate that it can preserve Kubuntu's boot and installer behaviour; merely extracting and recompressing a filesystem is not sufficient.
+The exact remastering toolchain is not yet selected. A prototype must demonstrate that it can preserve Kubuntu's boot and installer behaviour; merely extracting and recompressing a filesystem is not sufficient. The source checksum gate is implemented in `../scripts/verify-kubuntu-source.sh`; it checks the manifest against the official release `SHA256SUMS`, then verifies a local ISO when its path is supplied.
 
 ## Planned layout
 
@@ -51,4 +51,4 @@ Stable features form the default experience. Experimental features may be shippe
 
 ## Current gate
 
-The next deliverable is a minimal remaster prototype based on the selected Kubuntu ISO. Run `bash scripts/iso-preflight.sh` and `python3 tests/iso-manifest-smoke.py` from the repository root to validate metadata; these checks do not build an image. See [Image-Build Tool Evaluation](../docs/IMAGE-BUILD-TOOLS.md) and [ISO Roadmap](../docs/ISO-ROADMAP.md).
+The next deliverable is a minimal remaster prototype based on the selected Kubuntu ISO. Run `bash scripts/iso-preflight.sh`, `python3 tests/iso-manifest-smoke.py`, and `bash scripts/verify-kubuntu-source.sh --metadata-only` from the repository root to validate metadata and the official source checksum entry. Pass the local ISO path to the verifier to validate the actual image bytes. These checks do not build an image. See [Image-Build Tool Evaluation](../docs/IMAGE-BUILD-TOOLS.md) and [ISO Roadmap](../docs/ISO-ROADMAP.md).
