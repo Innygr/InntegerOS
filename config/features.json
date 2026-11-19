@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "default_experimental_enabled": false,
+  "ui_badge": "EXPERIMENTAL",
+  "enablement_requires_explicit_user_action": true,
+  "features": [
+    {
+      "id": "grub-boot-manager",
+      "name": "Experimental GRUB Boot Manager",
+      "status": "experimental",
+      "default_enabled": false,
+      "entrypoint": "scripts/boot-manager.sh",
+      "notes": "Boot-menu management and random-boot behaviour require additional hardware and recovery testing."
+    },
+    {
+      "id": "blacklight-lockscreen-overlay",
+      "name": "Experimental Blacklight Lock Screen Overlay",
+      "status": "experimental",
+      "default_enabled": false,
+      "entrypoint": "scripts/blacklight-lockscreen.sh",
+      "notes": "The overlay modifies the visual lock-screen experience; native KDE authentication must remain intact."
+    }
+  ]
+}
