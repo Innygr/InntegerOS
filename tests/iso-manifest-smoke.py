@@ -19,11 +19,18 @@ class IsoManifestTests(unittest.TestCase):
         self.assertEqual(self.manifest["architecture"], "amd64")
         self.assertEqual(self.manifest["image_type"], "live")
 
-    def test_builder_and_installer_are_not_falsely_claimed(self):
-        self.assertIsNone(self.manifest["build"]["tool"])
+    def test_kubuntu_base_and_inherited_installer_are_explicit(self):
+        base = self.manifest["base"]
+        self.assertEqual(base["distribution"], "Kubuntu")
+        self.assertEqual(base["release"], "26.04.1")
+        self.assertEqual(base["status"], "selected")
+        self.assertEqual(base["source_iso"], "kubuntu-26.04.1-desktop-amd64.iso")
+        self.assertRegex(base["source_sha256"], r"^[0-9a-f]{64}$")
+        self.assertEqual(self.manifest["build"]["tool"], "kubuntu-iso-remaster")
+        self.assertIsNone(self.manifest["build"]["configuration"])
         self.assertEqual(self.manifest["build"]["status"], "not_started")
-        self.assertIsNone(self.manifest["installer"]["backend"])
-        self.assertEqual(self.manifest["installer"]["status"], "not_selected")
+        self.assertEqual(self.manifest["installer"]["backend"], "inherit-kubuntu-live-installer")
+        self.assertEqual(self.manifest["installer"]["status"], "pending_validation")
         self.assertTrue(self.manifest["installer"]["destructive_actions_require_confirmation"])
 
     def test_version_is_valid(self):
