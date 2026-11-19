@@ -4,20 +4,25 @@
   "image_type": "live",
   "architecture": "amd64",
   "base": {
-    "distribution": "Ubuntu",
-    "release": "26.04",
-    "status": "candidate",
-    "flavour": "undecided"
+    "distribution": "Kubuntu",
+    "release": "26.04.1",
+    "codename": "Resolute Raccoon",
+    "status": "selected",
+    "flavour": "Plasma",
+    "source_iso": "kubuntu-26.04.1-desktop-amd64.iso",
+    "source_url": "https://cdimages.ubuntu.com/kubuntu/releases/26.04.1/release/",
+    "source_sha256": "831e4d4bb85098339ba43d3502cd6619b27e76daf37246a084cd68a6413090b8",
+    "checksum_source": "SHA256SUMS from the official Kubuntu release directory"
   },
   "version_source": "../VERSION",
   "build": {
-    "tool": null,
+    "tool": "kubuntu-iso-remaster",
     "configuration": null,
     "status": "not_started"
   },
   "installer": {
-    "backend": null,
-    "status": "not_selected",
+    "backend": "inherit-kubuntu-live-installer",
+    "status": "pending_validation",
     "destructive_actions_require_confirmation": true
   },
   "package_manifests": [
