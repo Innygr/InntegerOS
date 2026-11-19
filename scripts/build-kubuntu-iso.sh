@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build a first-pass InntegerOS live ISO by remastering the selected Kubuntu ISO.
-# This embeds the repository payload and release identity in the live filesystem.
-# It deliberately does not install unvalidated package-manifest candidates.
+# This installs the required Plasma package manifests and first-party applications
+# into the Kubuntu live filesystem; optional bundles remain excluded by default.
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
