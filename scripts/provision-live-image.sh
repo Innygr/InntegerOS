@@ -43,7 +43,7 @@ import pathlib
 import sys
 
 path = pathlib.Path(sys.argv[1])
-stanzas = path.read_text(encoding="utf-8").strip().split("\\n\\n")
+stanzas = path.read_text(encoding="utf-8").strip().split("\n\n")
 kept = [
     stanza for stanza in stanzas
     if not any(
@@ -51,7 +51,7 @@ kept = [
         for line in stanza.splitlines()
     )
 ]
-path.write_text("\\n\\n".join(kept) + ("\\n" if kept else ""), encoding="utf-8")
+path.write_text("\\n\\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
 PY
         ;;
     esac
