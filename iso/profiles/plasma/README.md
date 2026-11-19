@@ -24,4 +24,4 @@ Plasma is the flagship and first implementation target because it is the current
 - Offline first boot is usable.
 - Package manifest is reviewed and captured in build metadata.
 
-The package list will be added after the base package set and build tool are selected.
+The current package candidates are listed in `../../manifests/profiles/plasma/packages.txt`. They are not frozen and must be resolved against the selected Ubuntu repositories before an image build.
