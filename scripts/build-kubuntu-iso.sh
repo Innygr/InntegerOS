@@ -6,7 +6,7 @@ set -Eeuo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFEST="${ROOT_DIR}/iso/manifest.json"
-BUILD_ROOT="${ROOT_DIR}/iso/build"
+BUILD_ROOT="${BUILD_ROOT:-${ROOT_DIR}/iso/build}"
 SOURCE_DIR="${BUILD_ROOT}/source"
 WORK_DIR="${BUILD_ROOT}/work"
 OUTPUT_DIR="${BUILD_ROOT}/output"
@@ -33,7 +33,7 @@ case "${1:-}" in
   *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
 esac
 
-for tool in "${PYTHON}" curl sha256sum xorriso unsquashfs mksquashfs rsync find; do
+for tool in "${PYTHON}" curl sha256sum xorriso unsquashfs mksquashfs rsync find flock; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "Missing build dependency: $tool" >&2
     exit 1
@@ -48,20 +48,18 @@ base = data["base"]
 print(base["source_iso"])
 print(base["source_sha256"])
 print(base["source_url"].rstrip("/") + "/" + base["source_iso"])
-print(base["source_url"].rstrip("/") + "/SHA256SUMS")
 print(data["product"])
 print(data["edition"])
 print(data["architecture"])
 PY
 )
-[[ "${#source[@]}" -eq 7 ]] || { echo "Could not read ISO build metadata." >&2; exit 1; }
+[[ "${#source[@]}" -eq 6 ]] || { echo "Could not read ISO build metadata." >&2; exit 1; }
 ISO_NAME="${source[0]}"
 EXPECTED_SHA="${source[1]}"
 ISO_URL="${source[2]}"
-SUMS_URL="${source[3]}"
-PRODUCT="${source[4]}"
-EDITION="${source[5]}"
-ARCH="${source[6]}"
+PRODUCT="${source[3]}"
+EDITION="${source[4]}"
+ARCH="${source[5]}"
 
 [[ "$PRODUCT" == InntegerOS && "$EDITION" == Plasma && "$ARCH" == amd64 ]] || {
   echo "Refusing unsupported product, edition, or architecture." >&2
