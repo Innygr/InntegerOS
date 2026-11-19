@@ -1,0 +1,37 @@
+{
+  "product": "InntegerOS",
+  "edition": "Plasma",
+  "image_type": "live",
+  "architecture": "amd64",
+  "base": {
+    "distribution": "Ubuntu",
+    "release": "26.04",
+    "status": "candidate",
+    "flavour": "undecided"
+  },
+  "version_source": "../VERSION",
+  "build": {
+    "tool": null,
+    "configuration": null,
+    "status": "not_started"
+  },
+  "installer": {
+    "backend": null,
+    "status": "not_selected",
+    "destructive_actions_require_confirmation": true
+  },
+  "package_manifests": [
+    "manifests/base/common.txt",
+    "manifests/profiles/plasma/packages.txt",
+    "manifests/optional/development.txt",
+    "manifests/optional/creative.txt",
+    "manifests/optional/gaming.txt"
+  ],
+  "release_artifacts": {
+    "iso": null,
+    "sha256": null,
+    "source_commit": null,
+    "build_log": null,
+    "vm_test_report": null
+  }
+}
