@@ -1,0 +1,140 @@
+name: Quick Upload ISO to Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Existing release tag, or a new tag to create (for example v0.8.0)
+        required: true
+        type: string
+      release_title:
+        description: Optional title when creating a new release
+        required: false
+        type: string
+      draft_release:
+        description: Create a new release as a draft
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: integeros-release-upload
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    name: Upload latest successful ISO build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: Innygr/InntegerOS
+      RELEASE_TAG: ${{ inputs.tag_name }}
+      RELEASE_TITLE: ${{ inputs.release_title }}
+      DRAFT_RELEASE: ${{ inputs.draft_release }}
+    steps:
+      - name: Find latest successful ISO build
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_TAG" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+            echo "::error::Invalid release tag. Use letters, numbers, dots, underscores, or hyphens."
+            exit 1
+          fi
+
+          run_json="$(gh run list --repo "$GH_REPO" --workflow build-iso.yml --branch main --status success --limit 1 --json databaseId,headSha,displayTitle)"
+          run_id="$(jq -r '.[0].databaseId // empty' <<<"$run_json")"
+          head_sha="$(jq -r '.[0].headSha // empty' <<<"$run_json")"
+          if [[ -z "$run_id" || -z "$head_sha" ]]; then
+            echo "::error::No successful InntegerOS ISO build was found on main."
+            exit 1
+          fi
+
+          artifact_name="InntegerOS-ISO-$head_sha"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+          echo "artifact_name=$artifact_name" >> "$GITHUB_OUTPUT"
+          echo "Using successful build run $run_id for commit $head_sha."
+
+      - name: Download ISO build artifact
+        shell: bash
+        env:
+          RUN_ID: ${{ steps.build.outputs.run_id }}
+          ARTIFACT_NAME: ${{ steps.build.outputs.artifact_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          gh run download "$RUN_ID" --repo "$GH_REPO" --name "$ARTIFACT_NAME" --dir release-assets
+          find release-assets -maxdepth 2 -type f -printf '%P\n'
+
+      - name: Verify release assets
+        id: assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t images < <(find release-assets -type f -name '*.iso' -print)
+          if (( ${#images[@]} != 1 )); then
+            echo "::error::Expected exactly one ISO in the build artifact; found ${#images[@]}."
+            exit 1
+          fi
+
+          iso="${images[0]}"
+          checksum="${iso}.sha256"
+          if [[ ! -s "$checksum" ]]; then
+            echo "::error::The ISO checksum file is missing."
+            exit 1
+          fi
+
+          expected="$(awk 'NR == 1 {print $1}' "$checksum")"
+          actual="$(sha256sum "$iso" | awk '{print $1}')"
+          if [[ -z "$expected" || "$expected" != "$actual" ]]; then
+            echo "::error::ISO SHA-256 verification failed."
+            exit 1
+          fi
+
+          echo "iso=$iso" >> "$GITHUB_OUTPUT"
+          echo "checksum=$checksum" >> "$GITHUB_OUTPUT"
+          echo "ISO checksum verified: $actual"
+
+      - name: Upload assets to existing release or create a new release
+        shell: bash
+        env:
+          ISO_FILE: ${{ steps.assets.outputs.iso }}
+          CHECKSUM_FILE: ${{ steps.assets.outputs.checksum }}
+          BUILD_SHA: ${{ steps.build.outputs.head_sha }}
+          BUILD_RUN: ${{ steps.build.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          assets=("$ISO_FILE" "$CHECKSUM_FILE")
+          for optional_asset in release-assets/BUILD-METADATA.txt release-assets/boot-catalog.txt; do
+            [[ ! -s "$optional_asset" ]] || assets+=("$optional_asset")
+          done
+
+          if gh release view "$RELEASE_TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists; uploading/replacing its ISO assets."
+            gh release upload "$RELEASE_TAG" "${assets[@]}" --repo "$GH_REPO" --clobber
+          else
+            title="$RELEASE_TITLE"
+            [[ -n "$title" ]] || title="InntegerOS $RELEASE_TAG"
+            notes="InntegerOS ISO built from commit $BUILD_SHA. Source workflow run: $BUILD_RUN."
+            if [[ "$DRAFT_RELEASE" == "true" ]]; then
+              gh release create "$RELEASE_TAG" "${assets[@]}" --repo "$GH_REPO" --target "$BUILD_SHA" --title "$title" --notes "$notes" --draft
+            else
+              gh release create "$RELEASE_TAG" "${assets[@]}" --repo "$GH_REPO" --target "$BUILD_SHA" --title "$title" --notes "$notes"
+            fi
+          fi
+
+          {
+            echo "## InntegerOS release assets uploaded"
+            echo
+            echo "- **Release:** $RELEASE_TAG"
+            echo "- **Build commit:** $BUILD_SHA"
+            echo "- **Build run:** $BUILD_RUN"
+            echo "- **ISO:** $ISO_FILE"
+            echo "- **SHA-256:** verified before upload"
+          } >> "$GITHUB_STEP_SUMMARY"
